@@ -29,9 +29,22 @@
 		1C7E0DDA2CC3CFA7003A1CC4 /* PtPPrototypeUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PtPPrototypeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1C7E0E0F2CC5504C003A1CC4 /* Exceptions for "PtPPrototype" folder in "PtPPrototype" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1C7E0DBF2CC3CFA5003A1CC4 /* PtPPrototype */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1C7E0DC22CC3CFA5003A1CC4 /* PtPPrototype */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1C7E0E0F2CC5504C003A1CC4 /* Exceptions for "PtPPrototype" folder in "PtPPrototype" target */,
+			);
 			path = PtPPrototype;
 			sourceTree = "<group>";
 		};
@@ -399,6 +412,8 @@
 				DEVELOPMENT_TEAM = 55N7SLFSBT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PtPPrototype/Info.plist;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app wants to send messages to nodes in your local network.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -428,6 +443,8 @@
 				DEVELOPMENT_TEAM = 55N7SLFSBT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PtPPrototype/Info.plist;
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app wants to send messages to nodes in your local network.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
