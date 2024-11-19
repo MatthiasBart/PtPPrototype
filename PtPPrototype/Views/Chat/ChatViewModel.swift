@@ -12,7 +12,6 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
         var messages: [Message] = []
         var currentMessage: String = ""
         var error: Error?
-        var isKeyBoardVisible: Bool = false
     }
     
     enum Action {
@@ -55,7 +54,6 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
                     in: session
                 )
                 
-                state.isKeyBoardVisible = false
                 state.currentMessage = ""
             } catch {
                 state.error = error

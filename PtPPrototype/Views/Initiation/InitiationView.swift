@@ -37,12 +37,12 @@ struct InitiationView: View {
             vm.send(.onAppear)
         }
         .alert("Invitation to Session", isPresented: .constant(vm.state.selectedInvitation != nil)) {
-            Button("Accept") {
-                vm.send(.pressedOnAcceptInvitation)
-            }
-            
             Button("Decline") {
                 vm.send(.pressedOnDeclineInvitation)
+            }
+
+            Button("Accept") {
+                vm.send(.pressedOnAcceptInvitation)
             }
         }
     }
