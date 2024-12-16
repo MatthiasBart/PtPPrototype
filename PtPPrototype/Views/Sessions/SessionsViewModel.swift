@@ -12,6 +12,10 @@ class SessionsViewModel: ObservableObject, AsyncViewModel {
         var sessions: [SessionImpl] = []
     }
     
+    enum Action {
+        case removeSession(IndexSet)
+    }
+    
     @Published
     private(set) var state: State
     
@@ -23,6 +27,15 @@ class SessionsViewModel: ObservableObject, AsyncViewModel {
         self.state = state
         self.service = service
         listenToService()
+    }
+    
+    func action(_ action: Action) async {
+        switch action {
+        case let .removeSession(indeces):
+            for index in indeces {
+                service.sessions.value.remove(at: index)
+            }
+        }
     }
     
     deinit {

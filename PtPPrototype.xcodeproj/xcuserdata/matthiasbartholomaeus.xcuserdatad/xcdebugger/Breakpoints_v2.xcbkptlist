@@ -46,10 +46,40 @@
             filePath = "PtPPrototype/Views/Sessions/SessionsViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "29"
-            endingLineNumber = "29"
+            startingLineNumber = "42"
+            endingLineNumber = "42"
             landmarkName = "SessionsViewModel"
             landmarkType = "3">
+            <Locations>
+               <Location
+                  uuid = "0D407BE9-60DC-4F12-A684-56F1AEFB73E6 - ca9afc6c99dec584"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "PtPPrototype.SessionsViewModel.deinit"
+                  moduleName = "PtPPrototype.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/matthiasbartholomaeus/matthias/joanneum/ws24/bakk/PtPPrototype/PtPPrototype/Views/Sessions/SessionsViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "42"
+                  endingLineNumber = "42">
+               </Location>
+               <Location
+                  uuid = "0D407BE9-60DC-4F12-A684-56F1AEFB73E6 - b47ef12fc1935ebd"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.Task&lt;(), Swift.Never&gt;) -&gt; () in PtPPrototype.SessionsViewModel.deinit"
+                  moduleName = "PtPPrototype.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/matthiasbartholomaeus/matthias/joanneum/ws24/bakk/PtPPrototype/PtPPrototype/Views/Sessions/SessionsViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "42"
+                  endingLineNumber = "42">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

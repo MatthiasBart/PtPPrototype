@@ -22,6 +22,9 @@ struct SessionsView: View {
                         Text(session.connectedPeers.count.description)
                     }
                 }
+                .onDelete { indexSet in
+                    vm.send(.removeSession(indexSet))
+                }
             }
         }
     }
