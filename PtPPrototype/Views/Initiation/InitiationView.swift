@@ -1,5 +1,5 @@
 //
-//  OutstandingInvitationsView.swift
+//  InitiationView.swift
 //  PtPPrototype
 //
 //  Created by Matthias Bartholomaeus on 17.11.24.
