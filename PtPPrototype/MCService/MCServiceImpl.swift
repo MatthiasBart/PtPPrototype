@@ -67,22 +67,30 @@ class MCServiceImpl: NSObject, MCService {
         session.messages.value.append(.local(content))
     }
     
-    func startTesting(for session: SessionImpl, numberOfBytes: Int = 1024 * 1024, split: Int = 1) throws {
-        guard let otherPeer = session.connectedPeers.first else { return }
+    func startTesting(for session: SessionImpl, numberOfBytes: Int = 1024 * 1024, splitSize: Int = 1) throws -> [Error?] {
+        var errors: [Error?] = []
+        guard let otherPeer = session.connectedPeers.first else { return errors }
         let stream = try session.startStream(withName: "test", toPeer: otherPeer)
         stream.open()
         
         let data: [UInt8] = Array(repeating: 61, count: numberOfBytes)
+        let dataSliced = data.split(into: splitSize)
         
         //data.count is number of bytes, since UInt8 has the size of a byte
-        for byte in data {
-            if stream.write(data, maxLength: data.count) < 0 {
+        for slice in dataSliced {
+            if stream.write(slice, maxLength: slice.count) < 0 {
                 if let streamError = stream.streamError {
-                    throw streamError
+                    errors.append(streamError)
                 } else {
-                    throw MCServiceError.streamWriteError
+                    errors.append(MCServiceError.streamWriteError)
                 }
+            } else {
+                errors.append(nil)
             }
         }
+        
+        //nil indicates a success
+        return errors
     }
 }
+
