@@ -61,7 +61,9 @@ class SessionImpl: MCSession, MCSessionDelegate, Session {
         withName streamName: String,
         fromPeer peerID: MCPeerID
     ) {
-        log.warning("didReceiveStream not implemented")
+        let content = Message.Content.text(.init(text: "Peer began testing: \(streamName)"))
+        
+        self.messages.value.append(.remote(content))
     }
     
     func session(

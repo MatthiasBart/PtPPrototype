@@ -68,6 +68,8 @@ class MCServiceImpl: NSObject, MCService {
     }
     
     func startTesting(for session: SessionImpl, numberOfBytes: Int = 1024 * 1024, splitSize: Int = 1) throws -> [Error?] {
+        addTestingMessage(in: session)
+        
         var errors: [Error?] = []
         guard let otherPeer = session.connectedPeers.first else { return errors }
         let stream = try session.startStream(withName: "test", toPeer: otherPeer)
@@ -91,6 +93,12 @@ class MCServiceImpl: NSObject, MCService {
         
         //nil indicates a success
         return errors
+    }
+    
+    private func addTestingMessage(in session: SessionImpl) {
+        let content = Message.Content.text(.init(text: "Started testing"))
+        
+        session.messages.value.append(.local(content))
     }
 }
 
