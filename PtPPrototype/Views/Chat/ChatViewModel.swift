@@ -12,6 +12,8 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
         var messages: [Message] = []
         var currentMessage: String = ""
         var error: Error?
+        
+        var isTesting: Bool = false
     }
     
     enum Action {
@@ -19,6 +21,7 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
         case onCurrentMessageChanged(String)
         case onSendButtonClicked
         case onErrorClickOk
+        case startTesting
     }
     
     @Published
@@ -61,6 +64,15 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
             
         case .onErrorClickOk:
             state.error = nil
+            
+        case .startTesting:
+            state.isTesting = true
+            do {
+                try service.startTesting(for: session)
+            } catch {
+                state.error = error
+            }
+            state.isTesting = false
         }
     }
 }
