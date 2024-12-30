@@ -9,7 +9,11 @@ import SwiftUI
 
 class SessionsViewModel: ObservableObject, AsyncViewModel {
     struct State {
-        var sessions: [SessionImpl] = []
+        var sessions: [any Session] = []
+    }
+    
+    enum Action {
+        case removeSession(IndexSet)
     }
     
     @Published
@@ -23,6 +27,15 @@ class SessionsViewModel: ObservableObject, AsyncViewModel {
         self.state = state
         self.service = service
         listenToService()
+    }
+    
+    func action(_ action: Action) async {
+        switch action {
+        case let .removeSession(indeces):
+            for index in indeces {
+                service.sessions.value.remove(at: index)
+            }
+        }
     }
     
     deinit {

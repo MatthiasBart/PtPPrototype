@@ -21,12 +21,22 @@ class BrowserImpl: MCNearbyServiceBrowser, MCNearbyServiceBrowserDelegate, Brows
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
-        nearbyPeersToInvite.value.append(
-            .init(
-                peerID: peerID,
-                discoveryInfo: info
+        if let existingNearbyPeer = nearbyPeersToInvite.value.first(where: { $0.peerID == peerID }) {
+            nearbyPeersToInvite.value.replace(
+                [existingNearbyPeer],
+                with: [ .init(
+                    peerID: peerID,
+                    discoveryInfo: info
+                )]
             )
-        )
+        } else {
+            nearbyPeersToInvite.value.append(
+                .init(
+                    peerID: peerID,
+                    discoveryInfo: info
+                )
+            )
+        }
     }
     
     func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {

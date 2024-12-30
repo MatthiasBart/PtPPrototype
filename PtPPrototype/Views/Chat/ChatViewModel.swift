@@ -12,6 +12,8 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
         var messages: [Message] = []
         var currentMessage: String = ""
         var error: Error?
+        
+        var isTesting: Bool = false
     }
     
     enum Action {
@@ -19,16 +21,17 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
         case onCurrentMessageChanged(String)
         case onSendButtonClicked
         case onErrorClickOk
+        case startTesting
     }
     
     @Published
     private(set) var state: State
     
-    let session: SessionImpl
+    let session: any Session
     
     private let service: MCService
 
-    init(state: State = .init(), session: SessionImpl, service: MCService = Config.service) {
+    init(state: State = .init(), session: any Session, service: MCService = Config.service) {
         self.state = state
         self.session = session
         self.service = service
@@ -49,10 +52,7 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
             guard !state.currentMessage.isEmpty else { return }
             
             do {
-                try service.send(
-                    .text(.init(text: state.currentMessage)),
-                    in: session
-                )
+                try session.send(.text(.init(text: state.currentMessage)))
                 
                 state.currentMessage = ""
             } catch {
@@ -61,6 +61,19 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
             
         case .onErrorClickOk:
             state.error = nil
+            
+        case .startTesting:
+            state.isTesting = true
+            
+            do {
+                try await session.startTesting(
+                    numberOfBytes: 1024*1024*10,
+                    splitSize: 1
+                )
+            } catch {
+                state.error = error
+            }
+            state.isTesting = false
         }
     }
 }

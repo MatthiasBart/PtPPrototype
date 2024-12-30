@@ -17,6 +17,12 @@ struct ChatView: View {
             ForEach(vm.state.messages) { message in
                 MessageView(message: message)
             }
+            
+            if vm.state.isTesting {
+                MessageView(message: .local(
+                    .text(.init(text: "Testing..."))
+                ))
+            }
         }
         .task {
             await vm.action(.onAppear)
@@ -32,6 +38,20 @@ struct ChatView: View {
         .alert("An Error occured", isPresented: .constant(vm.state.error != nil)) {
             Button("OK") {
                 vm.send(.onErrorClickOk)
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    vm.send(.startTesting)
+                } label: {
+                    if vm.state.isTesting {
+                        ProgressView()
+                    } else {
+                        Text("Send Test")
+                    }
+                }
+                .disabled(vm.state.isTesting)
             }
         }
     }
@@ -63,7 +83,7 @@ struct ChatView: View {
         state: .init(
             messages: messages
         ),
-        session: .init(myPeerID: .init(displayName: "hello")))
+        session: SessionImpl(myPeerID: .init(displayName: "hello")))
     )
 }
 

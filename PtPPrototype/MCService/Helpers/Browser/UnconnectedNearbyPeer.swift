@@ -12,3 +12,9 @@ struct UnconnectedNearbyPeer: Identifiable {
     let peerID: MCPeerID
     let discoveryInfo: [String: String]?
 }
+
+extension UnconnectedNearbyPeer: Equatable {
+    static func == (lhs: UnconnectedNearbyPeer, rhs: UnconnectedNearbyPeer) -> Bool {
+        lhs.id == rhs.id
+    }
+}
