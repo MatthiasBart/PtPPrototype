@@ -9,7 +9,7 @@ import SwiftUI
 
 class SessionsViewModel: ObservableObject, AsyncViewModel {
     struct State {
-        var sessions: [SessionImpl] = []
+        var sessions: [any Session] = []
     }
     
     enum Action {

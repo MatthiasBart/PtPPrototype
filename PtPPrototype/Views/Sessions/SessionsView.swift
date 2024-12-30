@@ -15,7 +15,7 @@ struct SessionsView: View {
     var body: some View {
         List {
             Section("Sessions") {
-                ForEach(vm.state.sessions) { session in
+                ForEach(vm.state.sessions, id: \.id) { session in
                     NavigationLink {
                         ChatView(vm: .init(session: session))
                     } label: {

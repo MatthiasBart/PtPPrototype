@@ -8,10 +8,10 @@
 import MultipeerConnectivity
 import Combine
 
-class SessionImpl: MCSession, MCSessionDelegate, Session {
+class SessionImpl: MCSession, MCSessionDelegate, Session, StreamDelegate {
     var messages = CurrentValueSubject<[Message], Never>([])
     
-    init(myPeerID: MCPeerID, messages: [Message] = []) {
+    init(myPeerID: MCPeerID, messages: [Message]) {
         self.messages.value = messages
         
         super.init(
@@ -21,6 +21,10 @@ class SessionImpl: MCSession, MCSessionDelegate, Session {
         )
         
         self.delegate = self
+    }
+    
+    convenience required init(myPeerID: MCPeerID) {
+        self.init(myPeerID: myPeerID, messages: [])
     }
     
     func session(
@@ -64,6 +68,43 @@ class SessionImpl: MCSession, MCSessionDelegate, Session {
         let content = Message.Content.text(.init(text: "Peer began testing: \(streamName)"))
         
         self.messages.value.append(.remote(content))
+        
+        stream.open()
+        stream.schedule(in: .main, forMode: .default)
+        stream.delegate = self
+    }
+    
+    func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
+        guard let stream = aStream as? InputStream else { return }
+        
+        switch eventCode {
+        case .endEncountered:
+            addMessage("Testing ended")
+            stream.close()
+            stream.remove(from: .main, forMode: .default)
+            
+        case .errorOccurred:
+            addMessage("Error occured")
+        case .openCompleted:
+            addMessage("Testing stream opened")
+        case .hasBytesAvailable:
+            let bufferSize = 1024
+            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
+            
+            while stream.hasBytesAvailable {
+                let read = stream.read(buffer, maxLength: bufferSize)
+                if read < 0 {
+                    addMessage("Error while reading stream")
+                } else if read > 0 {
+                    for offset in 0..<read {
+                        print(buffer[offset])
+                    }
+                }
+            }
+            
+        default:
+            break
+        }
     }
     
     func session(
@@ -83,5 +124,12 @@ class SessionImpl: MCSession, MCSessionDelegate, Session {
         withError error: (any Error)?
     ) {
         log.warning("didFinishReceivingResourceWithName not implemented")
+    }
+}
+
+extension SessionImpl {
+    func addMessage(_ text: String) {
+        let content = Message.Content.text(.init(text: text))
+        self.messages.value.append(.remote(content))
     }
 }

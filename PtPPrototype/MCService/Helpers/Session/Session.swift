@@ -7,8 +7,9 @@
 
 import MultipeerConnectivity
 import Combine
-//TODO: currently not in use
-protocol Session: Identifiable {
+
+protocol Session: Identifiable, MCSession {
     var messages: CurrentValueSubject<[Message], Never> { get }
     var connectedPeers: [MCPeerID] { get }
+    init(myPeerID: MCPeerID)
 }

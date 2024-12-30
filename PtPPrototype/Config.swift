@@ -11,7 +11,7 @@ struct Config {
     private static let serviceType = "txtchat"
     static let myPeerID = MCPeerID(displayName: UIDevice.current.name)
     
-    static let service: MCService = MCServiceImpl(
+    static let service: MCService = MCServiceImpl<SessionImpl>(
         browser: BrowserImpl(peer: myPeerID, serviceType: serviceType),
         advertiser: AdvertiserImpl(peer: myPeerID, discoveryInfo: nil, serviceType: serviceType),
         myPeerID: myPeerID

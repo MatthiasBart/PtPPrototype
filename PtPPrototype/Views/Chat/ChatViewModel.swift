@@ -27,11 +27,11 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
     @Published
     private(set) var state: State
     
-    let session: SessionImpl
+    let session: any Session
     
     private let service: MCService
 
-    init(state: State = .init(), session: SessionImpl, service: MCService = Config.service) {
+    init(state: State = .init(), session: any Session, service: MCService = Config.service) {
         self.state = state
         self.session = session
         self.service = service
@@ -68,7 +68,23 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
         case .startTesting:
             state.isTesting = true
             do {
-                try service.startTesting(for: session)
+                let results = try await service.startTesting(
+                    for: session,
+                    numberOfBytes: 1024 * 1024,
+                    splitSize: 1
+                )
+                let numberOfErrors =  results.filter { $0 != nil }.count
+                let numberOfPackages = results.count
+                let numberOfSuccessfulPackages = numberOfPackages - numberOfErrors
+                
+                let content = Message.Content.text(
+                    .init(text: "Results after \(numberOfPackages.formatted()) packages sent:\n\(numberOfSuccessfulPackages.formatted()) successful packages\n\(numberOfErrors.formatted()) errors\n")
+                )
+                
+                try  service.send(
+                    content,
+                    in: session
+                )
             } catch {
                 state.error = error
             }

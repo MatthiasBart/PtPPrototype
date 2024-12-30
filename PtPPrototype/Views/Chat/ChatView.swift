@@ -83,7 +83,7 @@ struct ChatView: View {
         state: .init(
             messages: messages
         ),
-        session: .init(myPeerID: .init(displayName: "hello")))
+        session: SessionImpl(myPeerID: .init(displayName: "hello")))
     )
 }
 

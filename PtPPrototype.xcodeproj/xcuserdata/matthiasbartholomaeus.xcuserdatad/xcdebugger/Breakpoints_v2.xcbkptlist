@@ -50,36 +50,38 @@
             endingLineNumber = "42"
             landmarkName = "SessionsViewModel"
             landmarkType = "3">
-            <Locations>
-               <Location
-                  uuid = "0D407BE9-60DC-4F12-A684-56F1AEFB73E6 - ca9afc6c99dec584"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "PtPPrototype.SessionsViewModel.deinit"
-                  moduleName = "PtPPrototype.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/matthiasbartholomaeus/matthias/joanneum/ws24/bakk/PtPPrototype/PtPPrototype/Views/Sessions/SessionsViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "42"
-                  endingLineNumber = "42">
-               </Location>
-               <Location
-                  uuid = "0D407BE9-60DC-4F12-A684-56F1AEFB73E6 - b47ef12fc1935ebd"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (Swift.Task&lt;(), Swift.Never&gt;) -&gt; () in PtPPrototype.SessionsViewModel.deinit"
-                  moduleName = "PtPPrototype.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/matthiasbartholomaeus/matthias/joanneum/ws24/bakk/PtPPrototype/PtPPrototype/Views/Sessions/SessionsViewModel.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "42"
-                  endingLineNumber = "42">
-               </Location>
-            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "A0BAD5F5-6F9E-494C-8E86-37BDC645C4BC"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PtPPrototype/Views/Chat/ChatViewModel.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "89"
+            endingLineNumber = "89"
+            landmarkName = "action(_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "BC403210-E7BA-46CF-BB2B-9E83EA459642"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PtPPrototype/MCService/MCServiceImpl.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "96"
+            endingLineNumber = "96"
+            landmarkName = "startTesting(for:numberOfBytes:splitSize:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
