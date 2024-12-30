@@ -8,7 +8,7 @@
 import MultipeerConnectivity
 import Combine
 
-class MCServiceImpl<S: Session>: NSObject, MCService {
+class MCServiceImpl<S: Session>: MCService {
     private let browser: Browser
     private let advertiser: Advertiser
     let myPeerID: MCPeerID
