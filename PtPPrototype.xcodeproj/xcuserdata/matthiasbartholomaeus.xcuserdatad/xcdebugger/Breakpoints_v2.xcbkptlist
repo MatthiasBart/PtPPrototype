@@ -62,25 +62,9 @@
             filePath = "PtPPrototype/Views/Chat/ChatViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "89"
-            endingLineNumber = "89"
+            startingLineNumber = "74"
+            endingLineNumber = "74"
             landmarkName = "action(_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "BC403210-E7BA-46CF-BB2B-9E83EA459642"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PtPPrototype/MCService/MCServiceImpl.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "96"
-            endingLineNumber = "96"
-            landmarkName = "startTesting(for:numberOfBytes:splitSize:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

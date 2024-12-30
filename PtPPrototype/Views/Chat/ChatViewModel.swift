@@ -52,10 +52,7 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
             guard !state.currentMessage.isEmpty else { return }
             
             do {
-                try service.send(
-                    .text(.init(text: state.currentMessage)),
-                    in: session
-                )
+                try session.send(.text(.init(text: state.currentMessage)))
                 
                 state.currentMessage = ""
             } catch {
@@ -67,23 +64,11 @@ class ChatViewModel: ObservableObject, AsyncViewModel {
             
         case .startTesting:
             state.isTesting = true
+            
             do {
-                let results = try await service.startTesting(
-                    for: session,
-                    numberOfBytes: 1024 * 1024,
+                try await session.startTesting(
+                    numberOfBytes: 1024*1024*10,
                     splitSize: 1
-                )
-                let numberOfErrors =  results.filter { $0 != nil }.count
-                let numberOfPackages = results.count
-                let numberOfSuccessfulPackages = numberOfPackages - numberOfErrors
-                
-                let content = Message.Content.text(
-                    .init(text: "Results after \(numberOfPackages.formatted()) packages sent:\n\(numberOfSuccessfulPackages.formatted()) successful packages\n\(numberOfErrors.formatted()) errors\n")
-                )
-                
-                try  service.send(
-                    content,
-                    in: session
                 )
             } catch {
                 state.error = error

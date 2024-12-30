@@ -7,8 +7,8 @@
 
 import Foundation
 
-extension MCServiceImpl {
-    enum MCServiceError: Error {
+extension SessionImpl {
+    enum TestError: Error {
         case streamWriteError
     }
 }

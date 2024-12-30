@@ -14,10 +14,7 @@ protocol MCService: Advertiser {
     var myPeerID: MCPeerID { get }
     
     func startBrowsingForPeers()
-    func startTesting(for: any Session, numberOfBytes: Int, splitSize: Int) throws -> [Error?]
-    func startTesting(for: any Session, numberOfBytes: Int, splitSize: Int) async throws -> [Error?]
     func invite(peer: UnconnectedNearbyPeer)
     func accept(_ invitation: Invitation)
     func decline(_ invitation: Invitation)
-    func send(_ content: Message.Content, in session: any Session) throws
 }
