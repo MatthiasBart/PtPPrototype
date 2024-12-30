@@ -7,8 +7,12 @@
 
 import MultipeerConnectivity
 import Combine
-//TODO: currently not in use
-protocol Session: Identifiable {
+
+protocol Session: Identifiable, MCSession {
+    init(myPeerID: MCPeerID)
     var messages: CurrentValueSubject<[Message], Never> { get }
     var connectedPeers: [MCPeerID] { get }
+    
+    func startTesting(numberOfBytes: Int, splitSize: Int) async throws
+    func send(_ content: Message.Content) throws
 }

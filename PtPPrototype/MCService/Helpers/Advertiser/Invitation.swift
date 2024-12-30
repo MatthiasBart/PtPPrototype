@@ -19,3 +19,9 @@ struct Invitation: Identifiable {
         self.handler = handler
     }
 }
+
+extension Invitation: Equatable {
+    static func == (lhs: Invitation, rhs: Invitation) -> Bool {
+        lhs.id == rhs.id
+    }
+}

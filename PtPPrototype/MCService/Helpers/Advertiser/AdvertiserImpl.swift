@@ -29,7 +29,11 @@ class AdvertiserImpl: MCNearbyServiceAdvertiser, MCNearbyServiceAdvertiserDelega
             handler: invitationHandler
         )
         
-        outstandingInvitations.value.append(invitation)
+        if let existingInvitation = outstandingInvitations.value.first(where: { $0.peerID == peerID }) {
+            outstandingInvitations.value.replace([existingInvitation], with: [invitation])
+        } else {
+            outstandingInvitations.value.append(invitation)
+        }
     }
 }
 

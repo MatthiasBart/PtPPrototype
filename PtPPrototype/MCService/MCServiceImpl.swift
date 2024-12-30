@@ -8,7 +8,7 @@
 import MultipeerConnectivity
 import Combine
 
-class MCServiceImpl: NSObject, MCService {
+class MCServiceImpl<S: Session>: MCService {
     private let browser: Browser
     private let advertiser: Advertiser
     let myPeerID: MCPeerID
@@ -23,7 +23,7 @@ class MCServiceImpl: NSObject, MCService {
         self.myPeerID = myPeerID
     }
     
-    var sessions = CurrentValueSubject<[SessionImpl], Never>([])
+    var sessions = CurrentValueSubject<[any Session], Never>([])
     
     var outstandingInvitations: CurrentValueSubject<[Invitation], Never> {
         advertiser.outstandingInvitations
@@ -42,7 +42,7 @@ class MCServiceImpl: NSObject, MCService {
     }
     
     func invite(peer: UnconnectedNearbyPeer) {
-        let session = SessionImpl(myPeerID: myPeerID)
+        let session = S(myPeerID: myPeerID)
         
         browser.invitePeer(peer.peerID, to: session, withContext: nil, timeout: 5)
         
@@ -50,7 +50,7 @@ class MCServiceImpl: NSObject, MCService {
     }
     
     func accept(_ invitation: Invitation) {
-        let session = SessionImpl(myPeerID: myPeerID)
+        let session = S(myPeerID: myPeerID)
         
         invitation.handler(true, session)
         
@@ -60,10 +60,5 @@ class MCServiceImpl: NSObject, MCService {
     func decline(_ invitation: Invitation) {
         invitation.handler(false, nil)
     }
-    
-    func send(_ content: Message.Content, in session: SessionImpl) throws {
-        let data = try JSONEncoder().encode(content)
-        try session.send(data, toPeers: session.connectedPeers, with: .reliable)
-        session.messages.value.append(.local(content))
-    }
 }
+
