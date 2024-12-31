@@ -109,6 +109,7 @@ class SessionImpl: MCSession, MCSessionDelegate, Session, StreamDelegate {
     }
     
     func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
+        
         switch eventCode {
         case .endEncountered:
             addMessage("Testing ended")

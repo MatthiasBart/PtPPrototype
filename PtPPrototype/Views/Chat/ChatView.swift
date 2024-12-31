@@ -39,6 +39,8 @@ struct ChatView: View {
             Button("OK") {
                 vm.send(.onErrorClickOk)
             }
+        } message: {
+            Text(vm.state.error?.localizedDescription ?? "")
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
