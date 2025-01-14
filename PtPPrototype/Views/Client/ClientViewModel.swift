@@ -11,55 +11,49 @@ import Network
 class ClientViewModel: ObservableObject, AsyncViewModel {
     
     struct State {
-        var advertiserNames = [String]()
-        var isShowingClientView: Bool = false
+        var advertiserNamesOfSelectedClient = [String]()
+        var selectedProtocol: TransportProtocol = .tcp
+        var isShowingBrowserView: Bool = true
+        var testResult: String = "No Result for this protocol."
     }
     
     enum Action {
         case onAppear
         case onTapOnAdvertiserName(String)
         case onStartTestingButtonPressed
+        case onPickerValueChanged(TransportProtocol)
     }
     
     @Published
     private(set) var state: State
-    
     private(set) var clients: [any Client] = []
+    private var listenToClientOfSelectedProtocolTask: Task<Void, Never>? = nil
     
-    private var tasks: Set<Task<Void, Never>> = []
-    
-    init(state: State = .init(), client: any Client = Config.client) {
+    init(state: State = .init(), clients: [any Client] = Config.clients) {
         self.state = state
-        self.clients.append(client)
-        listenToClient()
+        self.clients = clients
     }
     
     deinit {
-        tasks.forEach { $0.cancel() }
+        listenToClientOfSelectedProtocolTask?.cancel()
     }
     
     @MainActor
     func action(_ action: Action) async {
         switch action {
+        case let .onPickerValueChanged(selectedProtocol):
+            state.selectedProtocol = selectedProtocol
+            state.advertiserNamesOfSelectedClient = []
+            listenToClientOfSelectedProtocol()
+            
         case .onAppear:
+            listenToClientOfSelectedProtocol()
             for client in clients {
                 client.startBrowsing()
             }
             
         case let .onTapOnAdvertiserName(advertiserName):
-            for client in clients {
-                guard let browserResult = client.browserResults.value.first(where: {
-                    if case let NWEndpoint.service(name: name, type: _, domain: _, interface: _) = $0.endpoint {
-                        return  name.hasPrefix(advertiserName)
-                    }
-                    
-                    return false
-                }) else { return }
-                
-                client.createConnection(with: browserResult)
-            }
-            
-            state.isShowingClientView =  true
+            break
             
         case .onStartTestingButtonPressed:
             for client in clients {
@@ -67,29 +61,34 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             }
         }
     }
-    
-    func listenToClient() {
-        let task1 = Task { @MainActor in
-            for client in clients {
-                for await results in client.browserResults.values {
-                    state.advertiserNames = results.map {
-                        if case let NWEndpoint.service(name: name, type: _, domain: _, interface: _) = $0.endpoint {
-                            return name
-                        }
-                        
-                        return "no info"
+}
+
+extension ClientViewModel {
+    func listenToClientOfSelectedProtocol() {
+        listenToClientOfSelectedProtocolTask?.cancel()
+        
+        listenToClientOfSelectedProtocolTask = Task { @MainActor in
+            if let clientOfSelectedProtocol = clients.first(where: { $0.transportProtocol == state.selectedProtocol }) {
+                state.advertiserNamesOfSelectedClient = clientOfSelectedProtocol.browserResults.value.compactMap { $0.name }
+                state.testResult = clientOfSelectedProtocol.testResult.value?.description ?? "No Result for this protocol."
+
+                for await testResult in clientOfSelectedProtocol.testResult.values {
+                    state.testResult = testResult?.description ?? "No Result for this protocol."
+                    if testResult != nil {
+                        state.isShowingBrowserView = false
+                    }
+                }
+                
+                
+                for await browseResults in clientOfSelectedProtocol.browserResults.values {
+                    state.advertiserNamesOfSelectedClient = []
+                    for browseResult in browseResults {
+                        guard let advertiserName = browseResult.name else { continue }
+                        state.advertiserNamesOfSelectedClient.append(advertiserName)
                     }
                 }
             }
         }
-        
-        tasks.insert(task1)
     }
 }
 
-extension ClientViewModel {
-    struct BrowseResult: Hashable {
-        let advertiserName: String
-        let networkBrowseResult: NWBrowser.Result
-    }
-}

@@ -10,26 +10,18 @@ import Network
 
 struct BrowserView: View {
     
-    @StateObject
-    private var vm = ClientViewModel()
+    let advertiserNames: [String]
+    let onClickOnAdvertiserName: (String) -> Void
     
     var body: some View {
-        if vm.state.isShowingClientView {
-            ClientView(vm: vm)
-        } else {
-            if vm.state.advertiserNames.isEmpty {
-                ProgressView()
-                    .onAppear {
-                        vm.send(.onAppear)
-                    }
+        if advertiserNames.isEmpty {
+            ProgressView()
+        }
+        
+        List(advertiserNames) { advertiserName in
+            Button(advertiserName) {
+                onClickOnAdvertiserName(advertiserName)
             }
-            
-            List(vm.state.advertiserNames) { advertiserName in
-                Button(advertiserName) {
-                    vm.send(.onTapOnAdvertiserName(advertiserName))
-                }
-            }
-            .navigationTitle("Browsing Results")
         }
     }
 }

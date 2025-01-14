@@ -59,6 +59,7 @@ class ClientImpl<C: Connection>: Client {
 
         browser.browseResultsChangedHandler = { [weak self] results, changes in
             self?.browserResults.send(results)
+            print(results)
         }
 
         browser.start(queue: .main)

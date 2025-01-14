@@ -8,8 +8,8 @@
 import Network
 
 struct Config {
-    static let serviceProcols: [TransportProtocol] = []
-    //TODO
-    static let client: any Client = ClientImpl<ConnectionImpl>(transportProtocol: .udp)
-    static let server: (any Server)? = try? ServerImpl<ConnectionImpl>(transportProtocol: .udp)
+    static let serviceProtocols: [TransportProtocol] = [.udp, .tcp]
+    
+    static let clients: [any Client] = serviceProtocols.map { ClientImpl<ConnectionImpl>(transportProtocol: $0) }
+    static let servers: [any Server] = serviceProtocols.compactMap { try? ServerImpl<ConnectionImpl>(transportProtocol: $0) }
 }

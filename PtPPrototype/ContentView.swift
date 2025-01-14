@@ -11,15 +11,19 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Text("Is your device a browser or advertiser?")
+                Text("Is your device a browser/client or advertiser/server?")
                 
-                NavigationLink("Browser") {
-                    BrowserView()
+                NavigationLink("Client") {
+                    ClientView()
                 }
+                .buttonStyle(.borderedProminent)
+                .padding()
                 
-                NavigationLink("Advertiser") {
+                NavigationLink("Server") {
                     ServerView()
                 }
+                .buttonStyle(.borderedProminent)
+                .padding()
             }
         }
     }

@@ -22,14 +22,19 @@ struct ServerView: View {
     var body: some View {
         VStack {
             Picker("Protocol", selection: selectedProtocolBinding) {
-                ForEach(TransportProtocol.allCases) { tprotocol in
+                ForEach(Config.serviceProtocols) { tprotocol in
                     Text(tprotocol.rawValue)
                         .tag(tprotocol)
                 }
             }
              .pickerStyle(.segmented)
             
+            Spacer()
+            
             Text(vm.state.testResult)
+                .padding()
+            
+            Spacer()
         }
         .onAppear {
             vm.send(.onAppear)
