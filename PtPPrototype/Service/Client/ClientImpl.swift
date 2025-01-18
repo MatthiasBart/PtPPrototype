@@ -59,7 +59,6 @@ class ClientImpl<C: Connection>: Client {
 
         browser.browseResultsChangedHandler = { [weak self] results, changes in
             self?.browserResults.send(results)
-            print(results)
         }
 
         browser.start(queue: .main)
@@ -72,9 +71,9 @@ class ClientImpl<C: Connection>: Client {
     
     func startTesting() {
         Task {
-            let numberOfBytesSent = 1024*1024
+            let numberOfBytesSent = 1024*128
             let startingTime = Date()
-            let sentBytes = try? await connection?.startTesting(numberOfBytes: numberOfBytesSent, splitSize: 1)
+            await connection?.startTesting(numberOfBytes: numberOfBytesSent, splitSize: 1)
             testResult.send(TestResult(startedSendingAt: startingTime, sentBytes: numberOfBytesSent, endedSendingAt: .now))
         }
     }

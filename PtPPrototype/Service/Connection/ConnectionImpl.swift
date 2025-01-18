@@ -10,38 +10,50 @@ import Combine
 import Foundation
 
 class ConnectionImpl: Connection {
-    var connection: NWConnection
-    
+    private var connection: NWConnection
     var state: CurrentValueSubject<NWConnection.State, Never>
-    var message: CurrentValueSubject<Data, Never>
-    
+    var receiveMessage: ((Data?) -> Void)?
+
     required init(_ connection: NWConnection) {
         self.connection = connection
         self.state = .init(connection.state)
-        self.message = .init(Data())
         setupConnection()
     }
-
-    func startTesting(numberOfBytes: Int, splitSize: Int) async throws {
-        let allData: [UInt8] = Array(repeating: 61, count: numberOfBytes)
-        let dataSliced = allData.split(into: splitSize)
+    
+    private func startTesting(numberOfBytes: Int, splitSize: Int) {
+        var allData: [UInt8] = Array(repeating: 61, count: numberOfBytes)
+        var dataSliced = allData.split(into: splitSize)
+        allData = []
 //        connection.startDataTransferReport() TODO
 
         for slice in dataSliced {
-            var data = Data()
-            data.append(contentsOf: slice)
-            connection.send(content: data, completion: .contentProcessed({ print($0) }))
+            connection.send(content: slice, completion: .contentProcessed({ error in
+                if let error {
+                    print(error)
+                }
+            }))
+        }
+        
+        dataSliced = []
+    }
+
+    func startTesting(numberOfBytes: Int, splitSize: Int) async {
+        await withCheckedContinuation { continuation in
+            self.startTesting(numberOfBytes: numberOfBytes, splitSize: splitSize)
+            continuation.resume()
         }
     }
     
-    func receiveMessage() {
+    func _receiveMessage() {
         connection.receiveMessage { content, contentContext, isComplete, error in
             if let content {
-                self.message.value.append(content)
+                self.receiveMessage?(content)
             }
             
             if error == nil {
-                self.receiveMessage()
+                self._receiveMessage()
+            } else {
+                self.receiveMessage?(nil)
             }
         }
     }
@@ -55,7 +67,7 @@ class ConnectionImpl: Connection {
             switch state {
             case .ready:
                 log.info("connection ready")
-                self?.receiveMessage()
+                self?._receiveMessage()
                 
             default:
                 break

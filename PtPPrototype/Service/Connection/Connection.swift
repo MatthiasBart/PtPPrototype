@@ -12,7 +12,6 @@ import Foundation
 protocol Connection: Identifiable {
     init(_ connection: NWConnection)
     var state: CurrentValueSubject<NWConnection.State, Never> { get }
-    var message: CurrentValueSubject<Data, Never> { get }
-    func cancel()
-    func startTesting(numberOfBytes: Int, splitSize: Int) async throws
+    var receiveMessage: ((Data?) -> Void)? { get set }
+    func startTesting(numberOfBytes: Int, splitSize: Int) async
 }

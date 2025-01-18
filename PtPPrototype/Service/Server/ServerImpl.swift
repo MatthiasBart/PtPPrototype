@@ -25,11 +25,6 @@ class ServerImpl<C: Connection>: Server {
     }
     
     private var listener: NWListener
-    
-    private var messageObservingTask: Task<Void, Never>?
-    
-    private var receivedFirstPackageAt: Date?
-    
     let transportProtocol: TransportProtocol
     
     init(transportProtocol: TransportProtocol) throws {
@@ -42,10 +37,6 @@ class ServerImpl<C: Connection>: Server {
             ),
             using: transportProtocol.parameters
         )
-    }
-    
-    deinit {
-        messageObservingTask?.cancel()
     }
     
     func startAdvertising() {
@@ -63,19 +54,23 @@ class ServerImpl<C: Connection>: Server {
         listener.start(queue: .main)
     }
     
+    private var byteCount: Int = 0
+    private var receivedFirstPackageAt: Date?
+
     func listenToMessages() {
-        guard let connection else { return }
-        messageObservingTask?.cancel()
+        guard var connection else { return }
         
-        messageObservingTask = Task {
-            for await message in connection.message.values {
-                if let receivedFirstPackageAt {
-                    testResult.send(TestResult(receivedFirstPacketAt: receivedFirstPackageAt, receivedBytes: message.count, receivedLastPacketAt: nil))
-                } else {
-                    print(message.count)
-                    testResult.send(TestResult(receivedFirstPacketAt: .now, receivedBytes: message.count, receivedLastPacketAt: nil))
-                    receivedFirstPackageAt = .now
-                }
+        connection.receiveMessage = { [weak self] data in
+            if self?.receivedFirstPackageAt == nil {
+                self?.receivedFirstPackageAt = .now
+            }
+            
+            if let data {
+                self?.byteCount += data.count
+            } else if let receivedFirstPackageAt = self?.receivedFirstPackageAt, let byteCount = self?.byteCount {
+                self?.testResult.value = TestResult(receivedFirstPacketAt: receivedFirstPackageAt, receivedBytes: byteCount, receivedLastPacketAt: .now)
+                self?.byteCount = 0
+                self?.receivedFirstPackageAt = nil
             }
         }
     }

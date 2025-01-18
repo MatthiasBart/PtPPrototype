@@ -29,6 +29,10 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
     private(set) var clients: [any Client] = []
     private var listenToClientOfSelectedProtocolTask: Task<Void, Never>? = nil
     
+    private var clientOfSelectedProtocol: (any Client)? {
+        clients.first { $0.transportProtocol == state.selectedProtocol }
+    }
+
     init(state: State = .init(), clients: [any Client] = Config.clients) {
         self.state = state
         self.clients = clients
@@ -53,11 +57,13 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             }
             
         case let .onTapOnAdvertiserName(advertiserName):
-            break
+            if let clientOfSelectedProtocol, let browserResult = clientOfSelectedProtocol.browserResults.value.first(where: { $0.name == advertiserName }) {
+                clientOfSelectedProtocol.createConnection(with: browserResult)
+            }
             
         case .onStartTestingButtonPressed:
-            for client in clients {
-                client.startTesting()
+            if let clientOfSelectedProtocol {
+                clientOfSelectedProtocol.startTesting()
             }
         }
     }
@@ -68,7 +74,7 @@ extension ClientViewModel {
         listenToClientOfSelectedProtocolTask?.cancel()
         
         listenToClientOfSelectedProtocolTask = Task { @MainActor in
-            if let clientOfSelectedProtocol = clients.first(where: { $0.transportProtocol == state.selectedProtocol }) {
+            if let clientOfSelectedProtocol {
                 state.advertiserNamesOfSelectedClient = clientOfSelectedProtocol.browserResults.value.compactMap { $0.name }
                 state.testResult = clientOfSelectedProtocol.testResult.value?.description ?? "No Result for this protocol."
 
