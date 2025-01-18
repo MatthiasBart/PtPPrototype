@@ -34,24 +34,26 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
     }
     
     @MainActor
-    func action(_ action: Action) {
+    func action(_ action: Action) async {
         switch action {
         case let .onPickerValueChanged(selectedTransportProtocol):
             state.selectedTransportProtocol = selectedTransportProtocol
-            if let server = servers.first(where: { $0.transportProtocol == selectedTransportProtocol }) {
-                observeTestResults(of: server)
-            }
+            observeTestResultsOfCurrentlySelectedServer()
             
         case .onAppear:
             for server in servers {
                 server.startAdvertising()
             }
+            observeTestResultsOfCurrentlySelectedServer()
         }
     }
 }
 
 extension ServerViewModel {
-    func observeTestResults(of server: any Server) {
+    func observeTestResultsOfCurrentlySelectedServer() {
+        guard let server = servers.first(where: { $0.transportProtocol == state.selectedTransportProtocol }) else {
+            return
+        }
         testResultObservingTask?.cancel()
         
         testResultObservingTask = Task { @MainActor in

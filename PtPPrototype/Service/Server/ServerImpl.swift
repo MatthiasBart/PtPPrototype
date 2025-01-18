@@ -11,7 +11,7 @@ import Foundation
 import UIKit
 
 class ServerImpl<C: Connection>: Server {
-    var connection: (any Connection)?
+    private var connection: (any Connection)?
     var testResult: CurrentValueSubject<(any CustomStringConvertible)?, Never> = .init(nil)
     
     struct TestResult: CustomStringConvertible {
@@ -20,7 +20,7 @@ class ServerImpl<C: Connection>: Server {
         let receivedLastPacketAt: Date?
         
         var description: String {
-            "Received first packet at \(receivedFirstPacketAt), received \(receivedBytes) bytes, received last packet at \(receivedLastPacketAt?.formatted())"
+            "Received first packet at \(receivedFirstPacketAt.formatted(date: .omitted, time: .complete)), received \(receivedBytes) bytes, received last packet at \(receivedLastPacketAt?.formatted(date: .omitted, time: .complete))"
         }
     }
     
@@ -60,7 +60,7 @@ class ServerImpl<C: Connection>: Server {
     func listenToMessages() {
         guard var connection else { return }
         
-        connection.receiveMessage = { [weak self] data in
+        connection.receiveMessageHandler = { [weak self] data in
             if self?.receivedFirstPackageAt == nil {
                 self?.receivedFirstPackageAt = .now
             }

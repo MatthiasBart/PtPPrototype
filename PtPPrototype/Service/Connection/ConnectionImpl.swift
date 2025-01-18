@@ -12,7 +12,7 @@ import Foundation
 class ConnectionImpl: Connection {
     private var connection: NWConnection
     var state: CurrentValueSubject<NWConnection.State, Never>
-    var receiveMessage: ((Data?) -> Void)?
+    var receiveMessageHandler: ((Data?) -> Void)?
 
     required init(_ connection: NWConnection) {
         self.connection = connection
@@ -20,41 +20,10 @@ class ConnectionImpl: Connection {
         setupConnection()
     }
     
-    private func startTesting(numberOfBytes: Int, splitSize: Int) {
-        var allData: [UInt8] = Array(repeating: 61, count: numberOfBytes)
-        var dataSliced = allData.split(into: splitSize)
-        allData = []
-//        connection.startDataTransferReport() TODO
-
-        for slice in dataSliced {
-            connection.send(content: slice, completion: .contentProcessed({ error in
-                if let error {
-                    print(error)
-                }
-            }))
-        }
-        
-        dataSliced = []
-    }
-
     func startTesting(numberOfBytes: Int, splitSize: Int) async {
         await withCheckedContinuation { continuation in
-            self.startTesting(numberOfBytes: numberOfBytes, splitSize: splitSize)
+            self._startTesting(numberOfBytes: numberOfBytes, splitSize: splitSize)
             continuation.resume()
-        }
-    }
-    
-    func _receiveMessage() {
-        connection.receiveMessage { content, contentContext, isComplete, error in
-            if let content {
-                self.receiveMessage?(content)
-            }
-            
-            if error == nil {
-                self._receiveMessage()
-            } else {
-                self.receiveMessage?(nil)
-            }
         }
     }
     
@@ -67,7 +36,7 @@ class ConnectionImpl: Connection {
             switch state {
             case .ready:
                 log.info("connection ready")
-                self?._receiveMessage()
+                self?.receiveMessage()
                 
             default:
                 break
@@ -76,5 +45,42 @@ class ConnectionImpl: Connection {
             self?.state.send(state)
         }
         self.connection.start(queue: .main)
+    }
+}
+
+//MARK: Client
+extension ConnectionImpl {
+    private func _startTesting(numberOfBytes: Int, splitSize: Int) {
+        for _ in stride(from: 0, to: numberOfBytes, by: splitSize) {
+            sendPackage(bytes: splitSize)
+        }
+    }
+    
+    private func sendPackage(bytes: Int) {
+        let data: [UInt8] = Array(repeating: 61, count: bytes)
+        
+        connection.send(content: data, completion: .contentProcessed( { error in
+            if let error {
+                print(error)
+            }
+        }))
+    }
+}
+
+//MARK: Server
+extension ConnectionImpl {
+    private func receiveMessage() {
+        connection.receiveMessage { content, contentContext, isComplete, error in
+            if let content {
+                self.receiveMessageHandler?(content)
+            }
+            
+            if let error {
+                log.info("Error: \(error), testing stopped")
+                self.receiveMessageHandler?(nil)
+            } else {
+                self.receiveMessage()
+            }
+        }
     }
 }

@@ -16,7 +16,7 @@ class ClientImpl<C: Connection>: Client {
         let endedSendingAt: Date
         
         var description: String {
-            "TestResult started sending at \(startedSendingAt), sent \(sentBytes) bytes, ended sending at \(endedSendingAt)"
+            "TestResult started sending at \(startedSendingAt.formatted(date: .omitted, time: .complete)), sent \(sentBytes) bytes, ended sending at \(endedSendingAt.formatted(date: .omitted, time: .complete))"
         }
     }
     

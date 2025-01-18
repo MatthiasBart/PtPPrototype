@@ -55,7 +55,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             for client in clients {
                 client.startBrowsing()
             }
-            
+
         case let .onTapOnAdvertiserName(advertiserName):
             if let clientOfSelectedProtocol, let browserResult = clientOfSelectedProtocol.browserResults.value.first(where: { $0.name == advertiserName }) {
                 clientOfSelectedProtocol.createConnection(with: browserResult)

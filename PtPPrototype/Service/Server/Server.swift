@@ -10,7 +10,6 @@ import Combine
 
 protocol Server {
     func startAdvertising()
-    var connection: (any Connection)? { get }
     var transportProtocol: TransportProtocol { get }
     var testResult: CurrentValueSubject<(any CustomStringConvertible)?, Never> { get }
 }

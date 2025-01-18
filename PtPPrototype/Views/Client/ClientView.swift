@@ -30,6 +30,8 @@ struct ClientView: View {
             }
             .pickerStyle(.segmented)
             
+            Spacer()
+            
             if vm.state.isShowingBrowserView {
                 BrowserView(advertiserNames: vm.state.advertiserNamesOfSelectedClient) { advertiserName in
                     vm.send(.onTapOnAdvertiserName(advertiserName))
@@ -37,6 +39,8 @@ struct ClientView: View {
             } else {
                 Text(vm.state.testResult)
             }
+            
+            Spacer()
         }
         .onAppear {
             vm.send(.onAppear)
