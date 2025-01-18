@@ -20,7 +20,7 @@ class ServerImpl<C: Connection>: Server {
         let receivedLastPacketAt: Date?
         
         var description: String {
-            "Received first packet at \(receivedFirstPacketAt.formatted(date: .omitted, time: .complete)), received \(receivedBytes) bytes, received last packet at \(receivedLastPacketAt?.formatted(date: .omitted, time: .complete))"
+            "Received first at: \(receivedFirstPacketAt.formatted(date: .omitted, time: .complete))\n Received: \(receivedBytes) bytes\n Received last at: \(receivedLastPacketAt?.formatted(date: .omitted, time: .complete) ?? "no time info")"
         }
     }
     
@@ -42,6 +42,8 @@ class ServerImpl<C: Connection>: Server {
     func startAdvertising() {
         listener.newConnectionHandler = { [weak self] connection in
             if self?.connection == nil {
+                self?.connection?.cancel()
+                self?.connection = nil
                 self?.connection = C(connection)
                 self?.listenToMessages()
             }

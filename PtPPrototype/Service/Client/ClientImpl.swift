@@ -16,7 +16,7 @@ class ClientImpl<C: Connection>: Client {
         let endedSendingAt: Date
         
         var description: String {
-            "TestResult started sending at \(startedSendingAt.formatted(date: .omitted, time: .complete)), sent \(sentBytes) bytes, ended sending at \(endedSendingAt.formatted(date: .omitted, time: .complete))"
+            "Started at: \(startedSendingAt.formatted(date: .omitted, time: .complete))\n Sent: \(sentBytes) bytes\n Ended at: \(endedSendingAt.formatted(date: .omitted, time: .complete))"
         }
     }
     
@@ -36,7 +36,7 @@ class ClientImpl<C: Connection>: Client {
     }
     
     func startBrowsing() {
-        browser.stateUpdateHandler = { state in
+        browser.stateUpdateHandler = { [weak self] state in
             switch state {
             case .cancelled:
                 log.info("browser cancelled")
@@ -46,7 +46,7 @@ class ClientImpl<C: Connection>: Client {
                 log.info("browser failed")
                 
             case .ready:
-                log.info("browser ready")
+                log.info("browser ready \(self?.transportProtocol.rawValue ?? "no protocol set")")
                 
             case .setup:
                 log.info("browser setup")
@@ -66,12 +66,14 @@ class ClientImpl<C: Connection>: Client {
      
     func createConnection(with browserResult: NWBrowser.Result) {
         let nwConnection = NWConnection(to: browserResult.endpoint, using: browser.parameters)
+        self.connection?.cancel()
+        self.connection = nil
         self.connection = C(nwConnection)
     }
     
     func startTesting() {
         Task {
-            let numberOfBytesSent = 1024*128
+            let numberOfBytesSent = 1024*16
             let startingTime = Date()
             await connection?.startTesting(numberOfBytes: numberOfBytesSent, splitSize: 1)
             testResult.send(TestResult(startedSendingAt: startingTime, sentBytes: numberOfBytesSent, endedSendingAt: .now))

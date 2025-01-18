@@ -119,22 +119,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "75B5C41B-6B10-4A3A-AE20-C2B8B482B9B4"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PtPPrototype/Views/Client/ClientViewModel.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "90"
-            endingLineNumber = "90"
-            landmarkName = "listenToClientOfSelectedProtocol()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "D9D345C8-D5C0-4B48-A8A3-5752DA5112DA"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
@@ -142,10 +126,40 @@
             filePath = "PtPPrototype/Views/Client/ClientViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "77"
-            endingLineNumber = "77"
-            landmarkName = "listenToClientOfSelectedProtocol()"
+            startingLineNumber = "99"
+            endingLineNumber = "99"
+            landmarkName = "listenToTestResultsOfClient()"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "D9D345C8-D5C0-4B48-A8A3-5752DA5112DA - bf9f27d4a8805548"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for closure #1 () async -&gt; () in PtPPrototype.ClientViewModel.listenToTestResultsOfClient() -&gt; ()"
+                  moduleName = "PtPPrototype.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/matthiasbartholomaeus/matthias/joanneum/ws24/bakk/PtPPrototype/PtPPrototype/Views/Client/ClientViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "99"
+                  endingLineNumber = "99">
+               </Location>
+               <Location
+                  uuid = "D9D345C8-D5C0-4B48-A8A3-5752DA5112DA - bf9f27d4a8805548"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for closure #1 () async -&gt; () in PtPPrototype.ClientViewModel.listenToTestResultsOfClient() -&gt; ()"
+                  moduleName = "PtPPrototype.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/matthiasbartholomaeus/matthias/joanneum/ws24/bakk/PtPPrototype/PtPPrototype/Views/Client/ClientViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "99"
+                  endingLineNumber = "99">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -158,9 +172,9 @@
             filePath = "PtPPrototype/Views/Client/ClientViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "78"
-            endingLineNumber = "78"
-            landmarkName = "listenToClientOfSelectedProtocol()"
+            startingLineNumber = "100"
+            endingLineNumber = "100"
+            landmarkName = "listenToTestResultsOfClient()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -174,8 +188,8 @@
             filePath = "PtPPrototype/Views/Client/ClientViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "54"
-            endingLineNumber = "54"
+            startingLineNumber = "58"
+            endingLineNumber = "58"
             landmarkName = "action(_:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -190,10 +204,40 @@
             filePath = "PtPPrototype/Views/Client/ClientViewModel.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "55"
-            endingLineNumber = "55"
+            startingLineNumber = "59"
+            endingLineNumber = "59"
             landmarkName = "action(_:)"
             landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "6E36ED77-CA57-4C6B-8EAB-D3EC87281C5B - c100a1e77133f228"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for PtPPrototype.ClientViewModel.action(PtPPrototype.ClientViewModel.Action) async -&gt; ()"
+                  moduleName = "PtPPrototype.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/matthiasbartholomaeus/matthias/joanneum/ws24/bakk/PtPPrototype/PtPPrototype/Views/Client/ClientViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "59"
+                  endingLineNumber = "59">
+               </Location>
+               <Location
+                  uuid = "6E36ED77-CA57-4C6B-8EAB-D3EC87281C5B - c100a1e77133f228"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(1) suspend resume partial function for PtPPrototype.ClientViewModel.action(PtPPrototype.ClientViewModel.Action) async -&gt; ()"
+                  moduleName = "PtPPrototype.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/matthiasbartholomaeus/matthias/joanneum/ws24/bakk/PtPPrototype/PtPPrototype/Views/Client/ClientViewModel.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "59"
+                  endingLineNumber = "59">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
