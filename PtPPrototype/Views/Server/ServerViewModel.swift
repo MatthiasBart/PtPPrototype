@@ -54,6 +54,7 @@ extension ServerViewModel {
         guard let server = servers.first(where: { $0.transportProtocol == state.selectedTransportProtocol }) else {
             return
         }
+        
         testResultObservingTask?.cancel()
         
         testResultObservingTask = Task { @MainActor in

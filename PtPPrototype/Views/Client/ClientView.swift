@@ -9,8 +9,8 @@ import SwiftUI
 
 struct ClientView: View {
     
-    @StateObject
-    var vm: ClientViewModel = .init()
+    @ObservedObject
+    var vm: ClientViewModel
     
     var selectedProtocolBinding: Binding<TransportProtocol> {
         Binding {

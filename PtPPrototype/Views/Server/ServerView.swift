@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct ServerView: View {
-    @StateObject
-    private var vm = ServerViewModel()
+
+    @ObservedObject
+    var vm: ServerViewModel
     
     var selectedProtocolBinding: Binding<TransportProtocol> {
         Binding {
