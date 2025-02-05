@@ -36,6 +36,8 @@ class ClientImpl<C: Connection>: Client {
     }
     
     func startBrowsing() {
+        guard browser.queue == nil else { return } // assuming this indicates that the browser hasnt been started
+        
         browser.stateUpdateHandler = { [weak self] state in
             switch state {
             case .cancelled:

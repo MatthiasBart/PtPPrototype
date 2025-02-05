@@ -12,35 +12,21 @@ struct ClientView: View {
     @ObservedObject
     var vm: ClientViewModel
     
-    var selectedProtocolBinding: Binding<TransportProtocol> {
-        Binding {
-            vm.state.selectedProtocol
-        } set: { selectedProtocol in
-            vm.send(.onPickerValueChanged(selectedProtocol))
-        }
-    }
-    
     var body: some View {
         VStack {
-            Picker("Protocol", selection: selectedProtocolBinding) {
-                ForEach(Config.serviceProtocols) { tprotocol in
-                    Text(tprotocol.rawValue)
-                        .tag(tprotocol)
-                }
-            }
-            .pickerStyle(.segmented)
-            
-            Spacer()
-            
             if vm.state.isShowingBrowserView {
-                BrowserView(advertiserNames: vm.state.advertiserNamesOfSelectedClient) { advertiserName in
+                BrowserView(advertiserNames: vm.state.advertiserNames) { advertiserName in
                     vm.send(.onTapOnAdvertiserName(advertiserName))
                 }
             } else {
-                Text(vm.state.testResult)
+                List {
+                    ForEach(Array(vm.state.testResult.keys)) { resultProtocol in
+                        Section(resultProtocol.rawValue) {
+                            Text(vm.state.testResult[resultProtocol] ?? "Protocol not found in test results.")
+                        }
+                    }
+                }
             }
-            
-            Spacer()
         }
         .onAppear {
             vm.send(.onAppear)

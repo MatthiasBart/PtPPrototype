@@ -31,7 +31,7 @@ class ServerImpl<C: Connection>: Server {
         self.transportProtocol = transportProtocol
         listener = try NWListener(
             service: .init(
-                name: UIDevice.current.name + transportProtocol.rawValue,
+                name: UIDevice.current.name,
                 type: transportProtocol.type,
                 domain: nil
             ),
@@ -41,12 +41,10 @@ class ServerImpl<C: Connection>: Server {
     
     func startAdvertising() {
         listener.newConnectionHandler = { [weak self] connection in
-            if self?.connection == nil {
-                self?.connection?.cancel()
-                self?.connection = nil
-                self?.connection = C(connection)
-                self?.listenToMessages()
-            }
+            self?.connection?.cancel()
+            self?.connection = nil
+            self?.connection = C(connection)
+            self?.listenToMessages()
         }
         
         listener.stateUpdateHandler = { state in
@@ -58,7 +56,7 @@ class ServerImpl<C: Connection>: Server {
     
     private var byteCount: Int = 0
     private var receivedFirstPackageAt: Date?
-
+    
     func listenToMessages() {
         guard var connection else { return }
         
@@ -70,7 +68,7 @@ class ServerImpl<C: Connection>: Server {
             if let data {
                 self?.byteCount += data.count
             } else if let receivedFirstPackageAt = self?.receivedFirstPackageAt, let byteCount = self?.byteCount {
-                self?.testResult.value = TestResult(receivedFirstPacketAt: receivedFirstPackageAt, receivedBytes: byteCount, receivedLastPacketAt: .now)
+                self?.testResult.value = TestResult(receivedFirstPacketAt: receivedFirstPackageAt, receivedBytes: byteCount, receivedLastPacketAt: .now.addingTimeInterval(-1)) // decreasing 1 sec because of delimiter time distance
                 self?.byteCount = 0
                 self?.receivedFirstPackageAt = nil
             }

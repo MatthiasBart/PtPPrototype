@@ -16,6 +16,7 @@ struct BrowserView: View {
     var body: some View {
         if advertiserNames.isEmpty {
             ProgressView()
+                .padding()
         }
         
         List(advertiserNames) { advertiserName in

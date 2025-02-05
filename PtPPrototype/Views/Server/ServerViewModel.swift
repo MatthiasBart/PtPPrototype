@@ -11,7 +11,7 @@ import SwiftUI
 class ServerViewModel: ObservableObject, AsyncViewModel {
     struct State {
         var selectedTransportProtocol: TransportProtocol = .tcp
-        var testResult: String = "No Result for this protocol."
+        var centerText: String = "No Information for this protocol."
     }
     
     enum Action {
@@ -59,7 +59,7 @@ extension ServerViewModel {
         
         testResultObservingTask = Task { @MainActor in
             for await testResult in server.testResult.values {
-                self.state.testResult = testResult?.description ?? "No Result for this protocol."
+                self.state.centerText = testResult?.description ?? "No Result for this protocol."
             }
         }
     }

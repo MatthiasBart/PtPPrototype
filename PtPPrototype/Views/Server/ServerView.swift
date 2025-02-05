@@ -32,7 +32,7 @@ struct ServerView: View {
             
             Spacer()
             
-            Text(vm.state.testResult)
+            Text(vm.state.centerText)
                 .padding()
             
             Spacer()
@@ -40,9 +40,5 @@ struct ServerView: View {
         .onAppear {
             vm.send(.onAppear)
         }
-    }
-    
-    func testResults() -> some View {
-        Text("Test results")
     }
 }

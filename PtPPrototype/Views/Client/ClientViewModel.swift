@@ -11,28 +11,22 @@ import Network
 class ClientViewModel: ObservableObject, AsyncViewModel {
     
     struct State {
-        var advertiserNamesOfSelectedClient = [String]()
-        var selectedProtocol: TransportProtocol = .tcp
+        var advertiserNames = [String]()
         var isShowingBrowserView: Bool = true
-        var testResult: String = "No Result for this protocol."
+        var testResult: [TransportProtocol: String] = [:]
     }
     
     enum Action {
         case onAppear
         case onTapOnAdvertiserName(String)
         case onStartTestingButtonPressed
-        case onPickerValueChanged(TransportProtocol)
     }
     
     @Published
     private(set) var state: State
     private(set) var clients: [any Client] = []
-    private var listenToTestResultsOfClientTask: Task<Void, Never>? = nil
-    private var listenToBrowseResultsOfClientTask: Task<Void, Never>? = nil
-    
-    private var clientOfSelectedProtocol: (any Client)? {
-        clients.first { $0.transportProtocol == state.selectedProtocol }
-    }
+    private var testResultsTasks = Set<Task<Void, Never>>()
+    private var browseResultsTasks = Set<Task<Void, Never>>()
 
     init(state: State = .init(), clients: [any Client] = Config.clients) {
         self.state = state
@@ -40,73 +34,74 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
     }
     
     deinit {
-        listenToTestResultsOfClientTask?.cancel()
-        listenToBrowseResultsOfClientTask?.cancel()
+        cancelRunningTasks()
+    }
+    
+    private func cancelRunningTasks() {
+        testResultsTasks.forEach { $0.cancel() }
+        browseResultsTasks.forEach { $0.cancel() }
     }
     
     @MainActor
     func action(_ action: Action) async {
         switch action {
-        case let .onPickerValueChanged(selectedProtocol):
-            state.selectedProtocol = selectedProtocol
-            state.advertiserNamesOfSelectedClient = []
-            listenToTestResultsOfClient()
-            listenToBrowseResultsOfClient()
-
         case .onAppear:
-            listenToBrowseResultsOfClient()
-            listenToTestResultsOfClient()
+            cancelRunningTasks()
+            listenToBrowserResults()
+            listenToTestResults()
             for client in clients {
                 client.startBrowsing()
             }
 
         case let .onTapOnAdvertiserName(advertiserName):
-            if let clientOfSelectedProtocol, let browserResult = clientOfSelectedProtocol.browserResults.value.first(where: { $0.name == advertiserName }) {
-                clientOfSelectedProtocol.createConnection(with: browserResult)
+            for client in clients {
+                if let browserResult = client.browserResults.value.first(where: { $0.name == advertiserName }) {
+                    client.createConnection(with: browserResult)
+                }
             }
             
         case .onStartTestingButtonPressed:
-            if let clientOfSelectedProtocol {
-                clientOfSelectedProtocol.startTesting()
+            for client in clients {
+                client.startTesting()
             }
         }
     }
 }
 
 extension ClientViewModel {
-    func listenToBrowseResultsOfClient() {
-        listenToBrowseResultsOfClientTask?.cancel()
-        
-        listenToBrowseResultsOfClientTask = Task { @MainActor in
-            if let clientOfSelectedProtocol {
-                state.advertiserNamesOfSelectedClient = clientOfSelectedProtocol.browserResults.value.compactMap { $0.name }
-                
-                for await browseResults in clientOfSelectedProtocol.browserResults.values {
-                    state.advertiserNamesOfSelectedClient = []
-                    for browseResult in browseResults {
-                        guard let advertiserName = browseResult.name else { continue }
-                        state.advertiserNamesOfSelectedClient.append(advertiserName)
+    func listenToBrowserResults() {
+        for client in clients {
+            browseResultsTasks.insert(
+                Task { @MainActor in
+                    for await browseResults in client.browserResults.values {
+                        state.advertiserNames.append(contentsOf: browseResults.compactMap { $0.name })
+                        state.advertiserNames = state.advertiserNames.removingDuplicates()
                     }
                 }
-            }
+            )
         }
     }
     
-    func listenToTestResultsOfClient() {
-        listenToTestResultsOfClientTask?.cancel()
-        
-        listenToTestResultsOfClientTask = Task { @MainActor in
-            if let clientOfSelectedProtocol {
-                state.testResult = clientOfSelectedProtocol.testResult.value?.description ?? "No Result for this protocol."
-
-                for await testResult in clientOfSelectedProtocol.testResult.values {
-                    state.testResult = testResult?.description ?? "No Result for this protocol."
-                    if testResult != nil {
-                        state.isShowingBrowserView = false
+    func listenToTestResults() {
+        for client in clients {
+            testResultsTasks.insert(
+                Task { @MainActor in
+                    for await testResult in client.testResult.values {
+                        state.testResult[client.transportProtocol] = testResult?.description ?? "No Result for this protocol."
+                        if testResult != nil {
+                            state.isShowingBrowserView = false
+                        }
                     }
                 }
-            }
+            )
         }
     }
 }
 
+extension [String] {
+    func removingDuplicates() -> Self {
+        var buffer = Set<String>()
+        
+        return self.filter { buffer.insert($0).inserted }
+    }
+}
