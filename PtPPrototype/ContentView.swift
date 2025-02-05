@@ -8,52 +8,33 @@
 import SwiftUI
 
 struct ContentView: View {
-    
-    @State
-    private var currentSegment: Segment = .initiation
+    @StateObject
+    private var serverViewModel = ServerViewModel()
     
     @StateObject
-    var sessionsVM: SessionsViewModel = .init()
-    
-    @StateObject
-    var initiationVM: InitiationViewModel = .init()
+    private var clientViewModel = ClientViewModel()
     
     var body: some View {
         NavigationStack {
             VStack {
-                switch currentSegment {
-                case .sessions:
-                    SessionsView(vm: sessionsVM)
-                    
-                case .initiation:
-                    InitiationView(vm: initiationVM)
+                Text("Is your device a browser/client or advertiser/server?")
+                
+                NavigationLink("Client") {
+                    ClientView(vm: clientViewModel)
                 }
+                .buttonStyle(.borderedProminent)
+                .padding()
+                
+                NavigationLink("Server") {
+                    ServerView(vm: serverViewModel)
+                }
+                .buttonStyle(.borderedProminent)
+                .padding()
             }
-            .animation(.default, value: currentSegment)
-            .toolbar(content: {
-                ToolbarItem(placement: .navigation) {
-                    Picker("Tab", selection: $currentSegment) {
-                        Text("Initiation")
-                            .tag(Segment.initiation)
-                        
-                        Text("Sessions")
-                            .tag(Segment.sessions)
-                    }
-                    .pickerStyle(.segmented)
-                }
-            })
-            .navigationTitle("PtP Prototype")
         }
     }
 }
 
 #Preview {
     ContentView()
-}
-
-extension ContentView {
-    enum Segment {
-        case sessions
-        case initiation
-    }
 }

@@ -5,15 +5,11 @@
 //  Created by Matthias Bartholomaeus on 20.10.24.
 //
 
-import MultipeerConnectivity
+import Network
 
 struct Config {
-    private static let serviceType = "txtchat"
-    static let myPeerID = MCPeerID(displayName: UIDevice.current.name)
+    static let serviceProtocols: [TransportProtocol] = [.udp, .tcp]
     
-    static let service: MCService = MCServiceImpl<SessionImpl>(
-        browser: BrowserImpl(peer: myPeerID, serviceType: serviceType),
-        advertiser: AdvertiserImpl(peer: myPeerID, discoveryInfo: nil, serviceType: serviceType),
-        myPeerID: myPeerID
-    )
+    static let clients: [any Client] = serviceProtocols.map { ClientImpl<ConnectionImpl>(transportProtocol: $0) }
+    static let servers: [any Server] = serviceProtocols.compactMap { try? ServerImpl<ConnectionImpl>(transportProtocol: $0) }
 }

@@ -8,6 +8,7 @@
 	<array>
 		<string>_txtchat._udp</string>
 		<string>_txtchat._tcp</string>
+		<string>_txtchat._quic</string>
 	</array>
 </dict>
 </plist>
