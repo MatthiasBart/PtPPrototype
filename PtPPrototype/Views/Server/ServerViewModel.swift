@@ -10,22 +10,20 @@ import SwiftUI
 
 class ServerViewModel: ObservableObject, AsyncViewModel {
     struct State {
-        var selectedTransportProtocol: TransportProtocol = .tcp
-        var centerText: String = "No Information for this protocol."
+        var status: [TransportProtocol: String] = [:]
     }
     
     enum Action {
-        case onPickerValueChanged(TransportProtocol)
         case onAppear
     }
     
     @Published
     private(set) var state: State
     private var servers: [any Server] = []
-    private var testResultObservingTask: Task<Void, Never>? = nil
+    private var tasks: Set<Task<Void, Never>> = []
     
     deinit {
-        testResultObservingTask?.cancel()
+        cancelRunningTasks()
     }
     
     init(state: State = .init(), servers: [any Server] = Config.servers) {
@@ -36,31 +34,30 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
     @MainActor
     func action(_ action: Action) async {
         switch action {
-        case let .onPickerValueChanged(selectedTransportProtocol):
-            state.selectedTransportProtocol = selectedTransportProtocol
-            observeTestResultsOfCurrentlySelectedServer()
-            
         case .onAppear:
+            cancelRunningTasks()
+            observeTestResultsOfServers()
             for server in servers {
                 server.startAdvertising()
             }
-            observeTestResultsOfCurrentlySelectedServer()
         }
     }
 }
 
 extension ServerViewModel {
-    func observeTestResultsOfCurrentlySelectedServer() {
-        guard let server = servers.first(where: { $0.transportProtocol == state.selectedTransportProtocol }) else {
-            return
-        }
-        
-        testResultObservingTask?.cancel()
-        
-        testResultObservingTask = Task { @MainActor in
-            for await testResult in server.testResult.values {
-                self.state.centerText = testResult?.description ?? "No Result for this protocol."
-            }
+    func cancelRunningTasks() {
+        tasks.forEach { $0.cancel() }
+    }
+    
+    func observeTestResultsOfServers() {
+        for server in servers {
+            tasks.insert(
+                Task { @MainActor in
+                    for await status in server.status.values {
+                        self.state.status[server.transportProtocol] = status?.description ?? "N/A"
+                    }
+                }
+            )
         }
     }
 }

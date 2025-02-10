@@ -46,19 +46,20 @@ class ConnectionImpl: Connection {
 //MARK: Client
 extension ConnectionImpl {
     private func _startTesting(numberOfBytes: Int, splitSize: Int) async {
-        Task {
+        await withCheckedContinuation { continuation in
             for _ in stride(from: 0, to: numberOfBytes, by: splitSize) {
                 sendPackage(bytes: splitSize)
             }
-            
-            try? await Task.sleep(for: .seconds(1)) //make sure delimiter doesnt reach before other udp packages
-            
-            connection.send(content: [delimiter], completion: .contentProcessed({ error in
-                if let error {
-                    log.error("\(error.localizedDescription)")
-                }
-            }))
+            continuation.resume()
         }
+        
+        try? await Task.sleep(for: .seconds(1)) //make sure delimiter doesnt reach before other udp packages
+        
+        connection.send(content: [delimiter], completion: .contentProcessed({ error in
+            if let error {
+                log.error("\(error.localizedDescription)")
+            }
+        }))
     }
     
     private func sendPackage(bytes: Int) {
@@ -85,7 +86,7 @@ extension ConnectionImpl {
                     self.receiveMessageHandler?(nil)
                 }
             }
-
+            
             if let error {
                 log.info("Error: \(error), testing stopped")
                 self.receiveMessageHandler?(nil)

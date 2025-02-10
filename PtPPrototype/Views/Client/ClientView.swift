@@ -19,11 +19,9 @@ struct ClientView: View {
                     vm.send(.onTapOnAdvertiserName(advertiserName))
                 }
             } else {
-                List {
-                    ForEach(Array(vm.state.testResult.keys)) { resultProtocol in
-                        Section(resultProtocol.rawValue) {
-                            Text(vm.state.testResult[resultProtocol] ?? "Protocol not found in test results.")
-                        }
+                List(Array(vm.state.testResults.keys)) { resultProtocol in
+                    Section(resultProtocol.rawValue) {
+                        Text(vm.state.testResults[resultProtocol] ?? "Protocol not found in test results.")
                     }
                 }
             }

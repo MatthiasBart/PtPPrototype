@@ -9,7 +9,7 @@ import Network
 import Combine
 
 protocol Client {
-    var testResult: CurrentValueSubject<(any CustomStringConvertible)?, Never> { get }
+    var status: CurrentValueSubject<(any CustomStringConvertible)?, Never> { get }
     var browserResults: CurrentValueSubject<Set<NWBrowser.Result>, Never> { get }
     var transportProtocol: TransportProtocol { get }
     

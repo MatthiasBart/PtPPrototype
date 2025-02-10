@@ -13,7 +13,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
     struct State {
         var advertiserNames = [String]()
         var isShowingBrowserView: Bool = true
-        var testResult: [TransportProtocol: String] = [:]
+        var testResults: [TransportProtocol: String] = [:]
     }
     
     enum Action {
@@ -86,8 +86,8 @@ extension ClientViewModel {
         for client in clients {
             testResultsTasks.insert(
                 Task { @MainActor in
-                    for await testResult in client.testResult.values {
-                        state.testResult[client.transportProtocol] = testResult?.description ?? "No Result for this protocol."
+                    for await testResult in client.status.values {
+                        state.testResults[client.transportProtocol] = testResult?.description ?? "No Result for this protocol."
                         if testResult != nil {
                             state.isShowingBrowserView = false
                         }

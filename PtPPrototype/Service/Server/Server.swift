@@ -11,5 +11,5 @@ import Combine
 protocol Server {
     func startAdvertising()
     var transportProtocol: TransportProtocol { get }
-    var testResult: CurrentValueSubject<(any CustomStringConvertible)?, Never> { get }
+    var status: CurrentValueSubject<(any CustomStringConvertible)?, Never> { get }
 }

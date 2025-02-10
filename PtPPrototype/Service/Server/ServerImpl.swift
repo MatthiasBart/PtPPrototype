@@ -12,7 +12,7 @@ import UIKit
 
 class ServerImpl<C: Connection>: Server {
     private var connection: (any Connection)?
-    var testResult: CurrentValueSubject<(any CustomStringConvertible)?, Never> = .init(nil)
+    var status: CurrentValueSubject<(any CustomStringConvertible)?, Never> = .init(nil)
     
     struct TestResult: CustomStringConvertible {
         let receivedFirstPacketAt: Date
@@ -45,6 +45,7 @@ class ServerImpl<C: Connection>: Server {
             self?.connection = nil
             self?.connection = C(connection)
             self?.listenToMessages()
+            self?.status.value = "Connection established"
         }
         
         listener.stateUpdateHandler = { state in
@@ -68,7 +69,7 @@ class ServerImpl<C: Connection>: Server {
             if let data {
                 self?.byteCount += data.count
             } else if let receivedFirstPackageAt = self?.receivedFirstPackageAt, let byteCount = self?.byteCount {
-                self?.testResult.value = TestResult(receivedFirstPacketAt: receivedFirstPackageAt, receivedBytes: byteCount, receivedLastPacketAt: .now.addingTimeInterval(-1)) // decreasing 1 sec because of delimiter time distance
+                self?.status.value = TestResult(receivedFirstPacketAt: receivedFirstPackageAt, receivedBytes: byteCount, receivedLastPacketAt: .now.addingTimeInterval(-1)) // decreasing 1 sec because of delimiter time distance
                 self?.byteCount = 0
                 self?.receivedFirstPackageAt = nil
             }

@@ -22,7 +22,7 @@ class ClientImpl<C: Connection>: Client {
     
     var browserResults = CurrentValueSubject<Set<NWBrowser.Result>, Never>([])
     var connection: (any Connection)?
-    var testResult: CurrentValueSubject<(any CustomStringConvertible)?, Never> = .init(nil)
+    var status: CurrentValueSubject<(any CustomStringConvertible)?, Never> = .init(nil)
     let transportProtocol: TransportProtocol
 
     private var browser: NWBrowser
