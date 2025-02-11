@@ -23,5 +23,12 @@ struct ServerView: View {
         .onAppear {
             vm.send(.onAppear)
         }
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Reload") {
+                    vm.send(.onReloadButtonPressed)
+                }
+            }
+        }
     }
 }

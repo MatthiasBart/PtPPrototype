@@ -30,6 +30,12 @@ struct ClientView: View {
             vm.send(.onAppear)
         }
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Reload") {
+                    vm.send(.onReloadButtonPressed)
+                }
+            }
+            
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Start Testing") {
                     vm.send(.onStartTestingButtonPressed)

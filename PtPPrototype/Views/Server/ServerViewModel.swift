@@ -15,6 +15,7 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
     
     enum Action {
         case onAppear
+        case onReloadButtonPressed
     }
     
     @Published
@@ -34,6 +35,10 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
     @MainActor
     func action(_ action: Action) async {
         switch action {
+        case .onReloadButtonPressed:
+            self.servers = Config.servers
+            await self.action(.onAppear)
+            
         case .onAppear:
             cancelRunningTasks()
             observeTestResultsOfServers()

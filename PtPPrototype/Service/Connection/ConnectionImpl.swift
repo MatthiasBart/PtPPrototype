@@ -13,13 +13,14 @@ class ConnectionImpl: Connection {
     private var connection: NWConnection
     var receiveMessageHandler: ((Int?) -> Void)?
     private var delimiter: UInt8 = 1
+    static let payloadSize = 128
 
     required init(_ connection: NWConnection) {
         self.connection = connection
         setupConnection()
     }
     
-    func startTesting(numberOfBytes: Int, splitSize: Int) async {
+    func startTesting(numberOfBytes: Int, splitSize: Int = payloadSize) async {
         await self._startTesting(numberOfBytes: numberOfBytes, splitSize: splitSize)
     }
     
@@ -78,6 +79,7 @@ extension ConnectionImpl {
             if let lengthData, lengthData.count == 4 {
                 
                 let length = lengthData.withUnsafeBytes { $0.load(as: UInt32.self) }.bigEndian
+                guard length == Self.payloadSize || length == 1 else { return }
                 
                 self.connection.receive(minimumIncompleteLength: Int(length), maximumLength: Int(length)) { data, contentContext, isComplete, error in
                     if let data {

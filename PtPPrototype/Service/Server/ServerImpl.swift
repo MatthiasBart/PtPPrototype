@@ -20,7 +20,7 @@ class ServerImpl<C: Connection>: Server {
         let receivedLastPacketAt: Date?
         
         var description: String {
-            "Received first at: \(receivedFirstPacketAt.formatted(date: .omitted, time: .complete))\n Received: \(receivedBytes) bytes\n Received last at: \(receivedLastPacketAt?.formatted(date: .omitted, time: .complete) ?? "no time info")"
+            "Received first at: \(CustomDateFormatter.precise.string(from: receivedFirstPacketAt))\nReceived: \(receivedBytes) bytes\nReceived last at: \(CustomDateFormatter.precise.string(from: receivedLastPacketAt ?? .distantPast))"
         }
     }
     

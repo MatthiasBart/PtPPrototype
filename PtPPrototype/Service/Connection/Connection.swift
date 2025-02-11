@@ -14,4 +14,5 @@ protocol Connection: Identifiable {
     func cancel()
     var receiveMessageHandler: ((Int?) -> Void)? { get set }
     func startTesting(numberOfBytes: Int, splitSize: Int) async
+    static var payloadSize: Int { get }
 }

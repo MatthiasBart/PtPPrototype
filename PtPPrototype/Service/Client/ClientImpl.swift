@@ -9,6 +9,13 @@ import Network
 import Foundation
 import Combine
 
+enum CustomDateFormatter {
+    static let precise = {
+        $0.dateFormat = "dd.MM HH:mm:ss.SSS"
+        return $0
+    }(DateFormatter())
+}
+
 class ClientImpl<C: Connection>: Client {
     struct TestResult: CustomStringConvertible {
         let startedSendingAt: Date
@@ -16,7 +23,7 @@ class ClientImpl<C: Connection>: Client {
         let endedSendingAt: Date
         
         var description: String {
-            "Started at: \(startedSendingAt.formatted(date: .omitted, time: .complete))\n Sent: \(sentBytes) bytes\n Ended at: \(endedSendingAt.formatted(date: .omitted, time: .complete))"
+            "Started at: \(CustomDateFormatter.precise.string(from: startedSendingAt))\nSent: \(sentBytes) bytes\nEnded at: \(CustomDateFormatter.precise.string(from: endedSendingAt))"
         }
     }
     
@@ -76,7 +83,7 @@ class ClientImpl<C: Connection>: Client {
     func startTesting() async {
         let numberOfBytesSent = 1024*32
         let startingTime = Date()
-        await connection?.startTesting(numberOfBytes: numberOfBytesSent, splitSize: 128)
+        await connection?.startTesting(numberOfBytes: numberOfBytesSent, splitSize: C.payloadSize)
         status.send(TestResult(startedSendingAt: startingTime, sentBytes: numberOfBytesSent, endedSendingAt: .now))
     }
 }

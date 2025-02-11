@@ -20,6 +20,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         case onAppear
         case onTapOnAdvertiserName(String)
         case onStartTestingButtonPressed
+        case onReloadButtonPressed
     }
     
     @Published
@@ -45,6 +46,13 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
     @MainActor
     func action(_ action: Action) async {
         switch action {
+        case .onReloadButtonPressed:
+            cancelRunningTasks()
+            state.isShowingBrowserView = true
+            state.testResults = [:]
+            self.clients = Config.clients
+            await self.action(.onAppear)
+            
         case .onAppear:
             cancelRunningTasks()
             listenToBrowserResults()
@@ -109,3 +117,7 @@ extension [String] {
         return self.filter { buffer.insert($0).inserted }
     }
 }
+
+//TODOS:
+// try to achieve package loss, how to deal with it
+// why double advertisers now
