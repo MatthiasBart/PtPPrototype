@@ -13,7 +13,7 @@ protocol Client {
     var browserResults: CurrentValueSubject<Set<NWBrowser.Result>, Never> { get }
     var transportProtocol: TransportProtocol { get }
     
-    func startTesting()
+    func startTesting() async
     func startBrowsing()
     func createConnection(with browserResult: NWBrowser.Result)
 }

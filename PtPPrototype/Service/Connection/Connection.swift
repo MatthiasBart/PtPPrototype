@@ -12,6 +12,6 @@ import Foundation
 protocol Connection: Identifiable {
     init(_ connection: NWConnection)
     func cancel()
-    var receiveMessageHandler: ((Data?) -> Void)? { get set }
+    var receiveMessageHandler: ((Int?) -> Void)? { get set }
     func startTesting(numberOfBytes: Int, splitSize: Int) async
 }

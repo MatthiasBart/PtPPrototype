@@ -52,7 +52,7 @@ class ServerImpl<C: Connection>: Server {
             log.info("\(state)")
         }
         
-        listener.start(queue: .main)
+        listener.start(queue: .global())
     }
     
     private var byteCount: Int = 0
@@ -61,15 +61,15 @@ class ServerImpl<C: Connection>: Server {
     func listenToMessages() {
         guard var connection else { return }
         
-        connection.receiveMessageHandler = { [weak self] data in
+        connection.receiveMessageHandler = { [weak self] dataCount in
             if self?.receivedFirstPackageAt == nil {
                 self?.receivedFirstPackageAt = .now
             }
             
-            if let data {
-                self?.byteCount += data.count
+            if let dataCount {
+                self?.byteCount += dataCount
             } else if let receivedFirstPackageAt = self?.receivedFirstPackageAt, let byteCount = self?.byteCount {
-                self?.status.value = TestResult(receivedFirstPacketAt: receivedFirstPackageAt, receivedBytes: byteCount, receivedLastPacketAt: .now.addingTimeInterval(-1)) // decreasing 1 sec because of delimiter time distance
+                self?.status.value = TestResult(receivedFirstPacketAt: receivedFirstPackageAt, receivedBytes: byteCount, receivedLastPacketAt: .now) 
                 self?.byteCount = 0
                 self?.receivedFirstPackageAt = nil
             }

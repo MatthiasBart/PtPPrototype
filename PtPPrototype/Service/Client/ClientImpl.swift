@@ -73,12 +73,10 @@ class ClientImpl<C: Connection>: Client {
         self.connection = C(nwConnection)
     }
     
-    func startTesting() {
-        Task {
-            let numberOfBytesSent = 1024*16
-            let startingTime = Date()
-            await connection?.startTesting(numberOfBytes: numberOfBytesSent, splitSize: 1)
-            testResult.send(TestResult(startedSendingAt: startingTime, sentBytes: numberOfBytesSent, endedSendingAt: .now))
-        }
+    func startTesting() async {
+        let numberOfBytesSent = 1024*32
+        let startingTime = Date()
+        await connection?.startTesting(numberOfBytes: numberOfBytesSent, splitSize: 128)
+        status.send(TestResult(startedSendingAt: startingTime, sentBytes: numberOfBytesSent, endedSendingAt: .now))
     }
 }

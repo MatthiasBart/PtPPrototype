@@ -11,8 +11,8 @@ import Foundation
 
 class ConnectionImpl: Connection {
     private var connection: NWConnection
-    var receiveMessageHandler: ((Data?) -> Void)?
-    private var delimiter: UInt8 = 0
+    var receiveMessageHandler: ((Int?) -> Void)?
+    private var delimiter: UInt8 = 1
 
     required init(_ connection: NWConnection) {
         self.connection = connection
@@ -32,7 +32,9 @@ class ConnectionImpl: Connection {
             switch state {
             case .ready:
                 log.info("connection ready")
-                self?.receive()
+                DispatchQueue.global().async {
+                    self?.receive()
+                }
                 
             default:
                 break
@@ -53,45 +55,46 @@ extension ConnectionImpl {
             continuation.resume()
         }
         
-        try? await Task.sleep(for: .seconds(1)) //make sure delimiter doesnt reach before other udp packages
-        
-        connection.send(content: [delimiter], completion: .contentProcessed({ error in
-            if let error {
-                log.error("\(error.localizedDescription)")
-            }
-        }))
+        sendPackage(bytes: 1, content: delimiter)
     }
     
-    private func sendPackage(bytes: Int) {
-        var data: [UInt8]? = Array(repeating: 61, count: bytes)
+    private func sendPackage(bytes: Int, content: UInt8 = 61) {
+        var data: [UInt8] = Array(repeating: content, count: bytes)
+        var length = UInt32(bytes).bigEndian
+        let lenghtData = Data(bytes: &length, count: 4)
         
-        connection.send(content: data, isComplete: true, completion: .contentProcessed( { error in
+        connection.send(content: lenghtData + data, isComplete: true, completion: .contentProcessed( { error in
             if let error {
                 log.error("\(error.localizedDescription)")
             }
         }))
-        
-        data = nil
     }
 }
 
 //MARK: Server
 extension ConnectionImpl {
     private func receive() {
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 1) { content, contentContext, isComplete, error in
-            if let content {
-                self.receiveMessageHandler?(content)
+        connection.receive(minimumIncompleteLength: 4, maximumLength: 4) { lengthData, contentContext, isComplete, error in
+            if let lengthData, lengthData.count == 4 {
                 
-                if content.last == self.delimiter {
-                    self.receiveMessageHandler?(nil)
+                let length = lengthData.withUnsafeBytes { $0.load(as: UInt32.self) }.bigEndian
+                
+                self.connection.receive(minimumIncompleteLength: Int(length), maximumLength: Int(length)) { data, contentContext, isComplete, error in
+                    if let data {
+                        self.receiveMessageHandler?((data + lengthData).count)
+                        
+                        if data.last == self.delimiter {
+                            self.receiveMessageHandler?(nil)
+                        }
+                    }
+                    
+                    if let error {
+                        log.info("Error: \(error), testing stopped")
+                        self.receiveMessageHandler?(nil)
+                    } else {
+                        self.receive()
+                    }
                 }
-            }
-            
-            if let error {
-                log.info("Error: \(error), testing stopped")
-                self.receiveMessageHandler?(nil)
-            } else {
-                self.receive()
             }
         }
     }

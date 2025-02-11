@@ -61,8 +61,12 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             }
             
         case .onStartTestingButtonPressed:
-            for client in clients {
-                client.startTesting()
+            await withTaskGroup(of: Void.self) { taskgroup in
+                for client in clients {
+                    taskgroup.addTask(priority: .background) {
+                        await client.startTesting()
+                    }
+                }
             }
         }
     }
