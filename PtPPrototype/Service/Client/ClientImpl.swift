@@ -9,30 +9,13 @@ import Network
 import Foundation
 import Combine
 
-enum CustomDateFormatter {
-    static let precise = {
-        $0.dateFormat = "dd.MM HH:mm:ss.SSS"
-        return $0
-    }(DateFormatter())
-}
-
 class ClientImpl<C: Connection>: Client {
-    struct TestResult: CustomStringConvertible {
-        let startedSendingAt: Date
-        let sentBytes: Int
-        let endedSendingAt: Date
-        
-        var description: String {
-            "Started at: \(CustomDateFormatter.precise.string(from: startedSendingAt))\nSent: \(sentBytes) bytes\nEnded at: \(CustomDateFormatter.precise.string(from: endedSendingAt))"
-        }
-    }
-    
-    var browserResults = CurrentValueSubject<Set<NWBrowser.Result>, Never>([])
-    var connection: (any Connection)?
-    var status: CurrentValueSubject<(any CustomStringConvertible)?, Never> = .init(nil)
-    let transportProtocol: TransportProtocol
-
+    private var connection: (any Connection)?
     private var browser: NWBrowser
+
+    var browserResults = CurrentValueSubject<Set<NWBrowser.Result>, Never>([])
+    var testResult: CurrentValueSubject<String?, Never> = .init(nil)
+    let transportProtocol: TransportProtocol
     
     init(transportProtocol: TransportProtocol) {
         self.transportProtocol = transportProtocol
@@ -40,6 +23,24 @@ class ClientImpl<C: Connection>: Client {
             for: .bonjour(type: transportProtocol.type, domain: nil),
             using: transportProtocol.parameters
         )
+    }
+
+    func createConnection(with browserResult: NWBrowser.Result) -> Error? {
+        let nwConnection = NWConnection(to: browserResult.endpoint, using: browser.parameters)
+        self.connection?.cancel()
+        self.connection = nil
+        self.connection = C(nwConnection)
+        
+        if case let .failed(error) = self.connection?.state {
+            return error
+        }
+        return nil
+    }
+    
+    func startTesting(with packageCount: Int, and packageSize: Int?) async {
+        await connection?.startTesting(numberOfPackages: packageCount, packageSizeInByte: packageSize ?? C.payloadSize)
+        self.testResult.value = await connection?.collectMetrics()
+        connection?.resetMetrics()
     }
     
     func startBrowsing() {
@@ -71,19 +72,5 @@ class ClientImpl<C: Connection>: Client {
         }
 
         browser.start(queue: .main)
-    }
-     
-    func createConnection(with browserResult: NWBrowser.Result) {
-        let nwConnection = NWConnection(to: browserResult.endpoint, using: browser.parameters)
-        self.connection?.cancel()
-        self.connection = nil
-        self.connection = C(nwConnection)
-    }
-    
-    func startTesting() async {
-        let numberOfBytesSent = 1024*32
-        let startingTime = Date()
-        await connection?.startTesting(numberOfBytes: numberOfBytesSent, splitSize: C.payloadSize)
-        status.send(TestResult(startedSendingAt: startingTime, sentBytes: numberOfBytesSent, endedSendingAt: .now))
     }
 }

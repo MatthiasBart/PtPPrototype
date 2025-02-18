@@ -14,9 +14,10 @@ struct ServerView: View {
     
     var body: some View {
         VStack {
-            List(Array(vm.state.status.keys)) { resultProtocol in
+            List(Config.serviceProtocols) { resultProtocol in
                 Section(resultProtocol.rawValue) {
-                    Text(vm.state.status[resultProtocol] ?? "Protocol not found in test results.")
+                    Text(vm.state.testResults[resultProtocol] ?? "Protocol not found in test results.")
+                    Text(vm.state.connectionStatus[resultProtocol] ?? "No connection established.")
                 }
             }
         }
@@ -27,6 +28,12 @@ struct ServerView: View {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Reload") {
                     vm.send(.onReloadButtonPressed)
+                }
+            }
+            
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Get Test Results") {
+                    vm.send(.onGetTestResultsButtonPressed)
                 }
             }
         }

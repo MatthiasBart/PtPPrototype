@@ -9,7 +9,9 @@ import Network
 import Combine
 
 protocol Server {
-    func startAdvertising()
     var transportProtocol: TransportProtocol { get }
-    var status: CurrentValueSubject<(any CustomStringConvertible)?, Never> { get }
+    var connectionStatus: CurrentValueSubject<String?, Never> { get }
+    func startAdvertising()
+    func stopAdvertising()
+    func getTestResult() async -> String?
 }

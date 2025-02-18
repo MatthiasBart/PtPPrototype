@@ -21,7 +21,6 @@ enum TransportProtocol: String, CaseIterable, Identifiable {
         switch self {
         case .udp:
             let udpOptions = NWProtocolUDP.Options()
-            udpOptions.preferNoChecksum = true
             let parameters = NWParameters(dtls: nil, udp: udpOptions)
             parameters.includePeerToPeer = true
             return parameters
@@ -36,7 +35,6 @@ enum TransportProtocol: String, CaseIterable, Identifiable {
             
         case .quic:
             let quicOptions = NWProtocolQUIC.Options()
-            quicOptions.maxDatagramFrameSize = 1024
             let parameters = NWParameters(quic: quicOptions)
             parameters.includePeerToPeer = true
             return parameters

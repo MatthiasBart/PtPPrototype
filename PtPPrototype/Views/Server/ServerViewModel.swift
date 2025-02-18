@@ -10,12 +10,14 @@ import SwiftUI
 
 class ServerViewModel: ObservableObject, AsyncViewModel {
     struct State {
-        var status: [TransportProtocol: String] = [:]
+        var testResults: [TransportProtocol: String] = [:]
+        var connectionStatus: [TransportProtocol: String] = [:]
     }
     
     enum Action {
         case onAppear
         case onReloadButtonPressed
+        case onGetTestResultsButtonPressed
     }
     
     @Published
@@ -36,6 +38,10 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
     func action(_ action: Action) async {
         switch action {
         case .onReloadButtonPressed:
+            cancelRunningTasks()
+            for server in servers {
+                server.stopAdvertising()
+            }
             self.servers = Config.servers
             await self.action(.onAppear)
             
@@ -44,6 +50,11 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
             observeTestResultsOfServers()
             for server in servers {
                 server.startAdvertising()
+            }
+            
+        case .onGetTestResultsButtonPressed:
+            for server in servers {
+                self.state.testResults[server.transportProtocol] = await server.getTestResult() ?? "N/A"
             }
         }
     }
@@ -58,8 +69,8 @@ extension ServerViewModel {
         for server in servers {
             tasks.insert(
                 Task { @MainActor in
-                    for await status in server.status.values {
-                        self.state.status[server.transportProtocol] = status?.description ?? "N/A"
+                    for await status in server.connectionStatus.values {
+                        self.state.connectionStatus[server.transportProtocol] = status?.description ?? "N/A"
                     }
                 }
             )

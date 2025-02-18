@@ -9,11 +9,12 @@ import Network
 import Combine
 
 protocol Client {
-    var status: CurrentValueSubject<(any CustomStringConvertible)?, Never> { get }
+    var testResult: CurrentValueSubject<String?, Never> { get }
     var browserResults: CurrentValueSubject<Set<NWBrowser.Result>, Never> { get }
+    
     var transportProtocol: TransportProtocol { get }
     
-    func startTesting() async
+    func startTesting(with packageCount: Int, and packageSize: Int?) async
     func startBrowsing()
-    func createConnection(with browserResult: NWBrowser.Result)
+    func createConnection(with browserResult: NWBrowser.Result) -> Error? 
 }

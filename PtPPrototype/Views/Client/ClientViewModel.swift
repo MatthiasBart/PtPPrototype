@@ -14,13 +14,17 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         var advertiserNames = [String]()
         var isShowingBrowserView: Bool = true
         var testResults: [TransportProtocol: String] = [:]
+        var numberOfPackages: Int = 1000
+        var sizeOfPackageInBytes: Int = 128
     }
     
     enum Action {
         case onAppear
         case onTapOnAdvertiserName(String)
-        case onStartTestingButtonPressed
+        case onStartTestingButtonPressedFor(TransportProtocol)
         case onReloadButtonPressed
+        case onNumberOfPackagesChanged(Int)
+        case onSizeOfPackageInBytesChanged(Int)
     }
     
     @Published
@@ -41,6 +45,8 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
     private func cancelRunningTasks() {
         testResultsTasks.forEach { $0.cancel() }
         browseResultsTasks.forEach { $0.cancel() }
+        testResultsTasks = []
+        browseResultsTasks = []
     }
     
     @MainActor
@@ -49,6 +55,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         case .onReloadButtonPressed:
             cancelRunningTasks()
             state.isShowingBrowserView = true
+            state.advertiserNames = []
             state.testResults = [:]
             self.clients = Config.clients
             await self.action(.onAppear)
@@ -62,20 +69,29 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             }
 
         case let .onTapOnAdvertiserName(advertiserName):
+            state.isShowingBrowserView = false
             for client in clients {
                 if let browserResult = client.browserResults.value.first(where: { $0.name == advertiserName }) {
-                    client.createConnection(with: browserResult)
-                }
-            }
-            
-        case .onStartTestingButtonPressed:
-            await withTaskGroup(of: Void.self) { taskgroup in
-                for client in clients {
-                    taskgroup.addTask(priority: .background) {
-                        await client.startTesting()
+                    if let error = client.createConnection(with: browserResult) {
+                        state.testResults[client.transportProtocol] = "Connection failed " + error.localizedDescription
+                    } else {
+                        state.testResults[client.transportProtocol] = "Connection create"
                     }
                 }
             }
+            
+            
+        case let .onStartTestingButtonPressedFor(transportProtocol):
+            guard state.testResults.contains(where: { $0.key == transportProtocol }) else { return }
+            if let client = clients.first(where: { $0.transportProtocol == transportProtocol }) {
+                await client.startTesting(with: state.numberOfPackages, and: state.sizeOfPackageInBytes)
+            }
+            
+        case .onNumberOfPackagesChanged(let count):
+            state.numberOfPackages = count
+            
+        case .onSizeOfPackageInBytesChanged(let size):
+            state.sizeOfPackageInBytes = size
         }
     }
 }
@@ -98,11 +114,8 @@ extension ClientViewModel {
         for client in clients {
             testResultsTasks.insert(
                 Task { @MainActor in
-                    for await testResult in client.status.values {
+                    for await testResult in client.testResult.values {
                         state.testResults[client.transportProtocol] = testResult?.description ?? "No Result for this protocol."
-                        if testResult != nil {
-                            state.isShowingBrowserView = false
-                        }
                     }
                 }
             )
@@ -117,7 +130,3 @@ extension [String] {
         return self.filter { buffer.insert($0).inserted }
     }
 }
-
-//TODOS:
-// try to achieve package loss, how to deal with it
-// why double advertisers now
