@@ -24,7 +24,7 @@ class ConnectionImpl: Connection {
     private var receivedFirstPackageAt: Date?
     private var receivedLastPackageAt: Date?
     private var remoteFirstPackageWasSentAt: Date?
-    private var remotePackageWasSentAt: Date?
+    private var remoteLastPackageWasSentAt: Date?
     private var errors: [Error] = []
     
     //Shared
@@ -71,18 +71,24 @@ class ConnectionImpl: Connection {
     
     func collectMetrics() async -> String {
         if isClient {
-            ConnectionMetricsClient(startedSendingAt: startedSendingAt ?? .now, numberOfSentPackages: numberOfTotalPackages, sizePerSentPackageInBytes: sizePerPackage, endedSendingAt: endedSendingAt, latencies: latencies).description
+            ConnectionMetricsClient(
+                startedSendingAt: startedSendingAt,
+                numberOfSentPackages: numberOfTotalPackages,
+                sizePerSentPackageInBytes: sizePerPackage,
+                endedSendingAt: endedSendingAt,
+                latencies: latencies
+            ).description
         } else {
             await withCheckedContinuation { continuation in
                 currentReport?.collect(queue: .global(), completion: { report in
                     continuation.resume(returning: ConnectionMetricsServer(
-                        receivedFirstPacketAt: self.receivedFirstPackageAt ?? .now,
                         receivedBytes: self.byteCount,
                         receivedPackages: self.packagesCount,
                         numberOfTotalPackages: self.numberOfTotalPackages,
-                        receivedLastPacketAt: self.receivedLastPackageAt ?? .now,
-                        remoteFirstPackageWasSentAt: self.remoteFirstPackageWasSentAt ?? .now,
-                        remotePackageWasSentAt: self.remotePackageWasSentAt ?? .now,
+                        receivedFirstPacketAt: self.receivedFirstPackageAt,
+                        receivedLastPacketAt: self.receivedLastPackageAt,
+                        remoteFirstPackageWasSentAt: self.remoteFirstPackageWasSentAt,
+                        remotePackageWasSentAt: self.remoteLastPackageWasSentAt,
                         interface: report.aggregatePathReport.interface.debugDescription,
                         ipPackagesSent: report.aggregatePathReport.sentIPPacketCount.formatted(),
                         ipPacketsReceived: report.aggregatePathReport.receivedIPPacketCount.formatted()
@@ -93,8 +99,25 @@ class ConnectionImpl: Connection {
     }
     
     func resetMetrics() {
-        self.latencies = []
-        self.currentReport = self.connection.startDataTransferReport()
+        //Client
+        startedSendingAt = nil
+        endedSendingAt = nil
+        sizePerPackage = 0
+        latencies = []
+        
+        //Server
+        byteCount = 0
+        packagesCount = 0
+        receivedFirstPackageAt = nil
+        receivedLastPackageAt = nil
+        remoteFirstPackageWasSentAt = nil
+        remoteLastPackageWasSentAt = nil
+        errors = []
+        
+        //Shared
+        numberOfTotalPackages = 0
+
+        currentReport = connection.startDataTransferReport()
     }
 }
 
@@ -130,14 +153,14 @@ extension ConnectionImpl {
     private func sendLatencyJitterPackage(dateData: Data? = nil) {
         let dateDataSize: Int = MemoryLayout<UInt64>.size
         var date = Date.now.timeIntervalSince1970.bitPattern.bigEndian
-        var dateDataCurrent = Data(bytes: &date, count: dateDataSize)
+        let dateDataCurrent = Data(bytes: &date, count: dateDataSize)
         
         var length = UInt32(dateDataSize).bigEndian
         let lengthData = Data(bytes: &length, count: MemoryLayout<UInt32>.size)
         
         connection.send(content: lengthData + (dateData ?? dateDataCurrent), completion: .contentProcessed({ error in
             if let error {
-                log.error("\(error.localizedDescription)")
+                self.errors.append(error)
             }
         }))
     }
@@ -161,7 +184,7 @@ extension ConnectionImpl {
         
         connection.send(content:  lenghtData + totalNumberOfPackagesData + dateData + junkData, isComplete: true, completion: .contentProcessed( { error in
             if let error {
-                log.error("\(error.localizedDescription)")
+                self.errors.append(error)
             }
         }))
     }
@@ -178,10 +201,10 @@ extension ConnectionImpl {
                 
                 //read the rest of the package using the size declared in the header before
                 
-                if length == 8 {
+                if length == 8 { // Jitter payload is 8 bytes, just contains time when it was sent
                     self.receive_latency_jitter_test()
                 } else {
-                    self.receive_message(length: length)
+                    self.receive_message(of: length)
                 }
             }
         }
@@ -207,7 +230,7 @@ extension ConnectionImpl {
         }
     }
     
-    private func receive_message(length: UInt32) {
+    private func receive_message(of length: UInt32) {
         self.connection.receive(minimumIncompleteLength: Int(length), maximumLength: Int(length)) { data, contentContext, isComplete, error in
             if let data {
                 //information about the total packages that will be sent, important for upd packages that can/will get lost
@@ -222,7 +245,7 @@ extension ConnectionImpl {
                 self.numberOfTotalPackages = Int(numberOfTotalPackages)
                 self.packagesCount += 1
                 self.receivedLastPackageAt = .now
-                self.remotePackageWasSentAt = Date(timeIntervalSince1970: TimeInterval(bitPattern: datePackageWasSent))
+                self.remoteLastPackageWasSentAt = Date(timeIntervalSince1970: TimeInterval(bitPattern: datePackageWasSent))
             }
             
             if let error {

@@ -10,7 +10,7 @@ import Combine
 import Foundation
 
 struct ConnectionMetricsClient: CustomStringConvertible {
-    let startedSendingAt: Date
+    let startedSendingAt: Date?
     let numberOfSentPackages: Int
     let sizePerSentPackageInBytes: Int
     let endedSendingAt: Date?
@@ -30,19 +30,30 @@ struct ConnectionMetricsClient: CustomStringConvertible {
     }
     
     var description: String {
-        "Started sending at: \(CustomDateFormatter.precise.string(from: startedSendingAt))\nSent: \(numberOfSentPackages) packages each \(sizePerSentPackageInBytes) bytes\nEnded sending at: \(CustomDateFormatter.precise.string(from: endedSendingAt ?? .distantPast))\nTook \(endedSendingAt?.timeIntervalSince(startedSendingAt) ?? .zero) seconds\n\(latencyCount) latencies counted\nAverage Latency: \(averageLatency)\nLatency Variance: \nJitter: \(jitter)\n"
+        """
+        Started \(startedSendingAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: startedSendingAt!))
+        Ended \(endedSendingAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: endedSendingAt!))
+        Took \(startedSendingAt != nil && endedSendingAt != nil ? endedSendingAt!.timeIntervalSince(startedSendingAt!).formatted() : "N/A") seconds
+        
+        \(numberOfSentPackages) packages each \(sizePerSentPackageInBytes) bytes
+        \(latencyCount) latencies counted
+        Average Latency: \(averageLatency)
+        Latency Variance: 
+        Jitter: \(jitter)
+        """
     }
 }
 
 struct ConnectionMetricsServer: CustomStringConvertible {
-    let receivedFirstPacketAt: Date
     let receivedBytes: Int
     let receivedPackages: Int
     let numberOfTotalPackages: Int
-    let receivedLastPacketAt: Date
     
-    let remoteFirstPackageWasSentAt: Date
-    let remotePackageWasSentAt: Date
+    let receivedFirstPacketAt: Date?
+    let receivedLastPacketAt: Date?
+    
+    let remoteFirstPackageWasSentAt: Date?
+    let remotePackageWasSentAt: Date?
     
     let errors: [any Error] = []
     
@@ -50,28 +61,32 @@ struct ConnectionMetricsServer: CustomStringConvertible {
     let ipPackagesSent: String
     let ipPacketsReceived: String
     
-    private var duration: TimeInterval {
-        receivedLastPacketAt.timeIntervalSince(receivedFirstPacketAt)
+    private var duration: TimeInterval? {
+        guard let receivedLastPacketAt, let receivedFirstPacketAt else { return nil }
+        return receivedLastPacketAt.timeIntervalSince(receivedFirstPacketAt)
     }
     
-    private var mbitsPerSecond: Float {
-        Float(receivedBytes * 8) / Float(duration)
+    private var mbitsPerSecond: Float? {
+        guard let duration else { return nil }
+        return Float(receivedBytes * 8) / Float(duration)
     }
     
     var description: String {
                 """
-        Received first at: \(CustomDateFormatter.precise.string(from: receivedFirstPacketAt))
-        Received last at: \(CustomDateFormatter.precise.string(from: receivedLastPacketAt))
+        Started \(receivedFirstPacketAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: receivedFirstPacketAt!))
+        Ended \(receivedLastPacketAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: receivedLastPacketAt!))
+        Took \(receivedFirstPacketAt != nil && receivedLastPacketAt != nil ? receivedLastPacketAt!.timeIntervalSince(receivedFirstPacketAt!).description : "N/A") seconds
 
-        Remote sent first at: \(CustomDateFormatter.precise.string(from: remoteFirstPackageWasSentAt))
-        Remote sent last at: \(CustomDateFormatter.precise.string(from: remotePackageWasSentAt))
+        Remote started \(remoteFirstPackageWasSentAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: remoteFirstPackageWasSentAt!))
+        Remote ended \(remotePackageWasSentAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: remotePackageWasSentAt!))
 
-        Received: \(receivedBytes.formatted()) bytes
-        Received: \(receivedPackages) of \(numberOfTotalPackages) packages
-        Took \(receivedLastPacketAt.timeIntervalSince(receivedFirstPacketAt)) seconds
+        \(receivedBytes.formatted()) bytes
+        \(receivedPackages) of \(numberOfTotalPackages) packages
 
-        \(mbitsPerSecond.formatted()) mbit/sec
-        Interface: \(interface)\nIP Packages Sent: \(ipPackagesSent)\nIP Packets Received: \(ipPacketsReceived)\n"
+        \(mbitsPerSecond == nil ? "N/A" : mbitsPerSecond!.formatted()) mbit/sec
+        Interface: \(interface)
+        IP Sent: \(ipPackagesSent)
+        IP Received: \(ipPacketsReceived)
         """
     }
 }
