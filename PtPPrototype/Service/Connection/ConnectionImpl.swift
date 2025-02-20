@@ -60,6 +60,7 @@ class ConnectionImpl: Connection {
                     self?.currentReport = self?.connection.startDataTransferReport()
                     self?.receive()
                 }
+                //connection.requestEstablishmentReport(queue: <#T##DispatchQueue#>, completion: <#T##(NWConnection.EstablishmentReport?) -> Void##(NWConnection.EstablishmentReport?) -> Void##(_ report: NWConnection.EstablishmentReport?) -> Void#>)
                 
             default:
                 break
@@ -71,13 +72,19 @@ class ConnectionImpl: Connection {
     
     func collectMetrics() async -> String {
         if isClient {
-            ConnectionMetricsClient(
-                startedSendingAt: startedSendingAt,
-                numberOfSentPackages: numberOfTotalPackages,
-                sizePerSentPackageInBytes: sizePerPackage,
-                endedSendingAt: endedSendingAt,
-                latencies: latencies
-            ).description
+            await withCheckedContinuation { continuation in
+                currentReport?.collect(queue: .global(), completion: { report in
+                    continuation.resume(returning: ConnectionMetricsClient(
+                        startedSendingAt: self.startedSendingAt,
+                        numberOfSentPackages: self.numberOfTotalPackages,
+                        sizePerSentPackageInBytes: self.sizePerPackage,
+                        endedSendingAt: self.endedSendingAt,
+                        errors: self.errors,
+                        latencies: self.latencies,
+                        dataTransferReport: report.aggregatePathReport
+                    ).description)
+                })
+            }
         } else {
             await withCheckedContinuation { continuation in
                 currentReport?.collect(queue: .global(), completion: { report in
@@ -89,12 +96,11 @@ class ConnectionImpl: Connection {
                         receivedLastPacketAt: self.receivedLastPackageAt,
                         remoteFirstPackageWasSentAt: self.remoteFirstPackageWasSentAt,
                         remotePackageWasSentAt: self.remoteLastPackageWasSentAt,
-                        interface: report.aggregatePathReport.interface.debugDescription,
-                        ipPackagesSent: report.aggregatePathReport.sentIPPacketCount.formatted(),
-                        ipPacketsReceived: report.aggregatePathReport.receivedIPPacketCount.formatted()
-                    ))
+                        errors: self.errors,
+                        dataTransferReport: report.aggregatePathReport
+                    ).description)
                 })
-            }.description
+            }
         }
     }
     
@@ -200,6 +206,10 @@ extension ConnectionImpl {
                 let length = lengthData.withUnsafeBytes { $0.load(as: UInt32.self) }.bigEndian
                 
                 //read the rest of the package using the size declared in the header before
+                
+                if let error {
+                    self.errors.append(error)
+                }
                 
                 if length == 8 { // Jitter payload is 8 bytes, just contains time when it was sent
                     self.receive_latency_jitter_test()
