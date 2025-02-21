@@ -39,7 +39,7 @@ struct ConnectionMetricsClient: CustomStringConvertible {
     
     private var mbitsPerSecond: Float? {
         guard let duration else { return nil }
-        return Float(numberOfSentPackages * sizePerSentPackageInBytes * 8) / Float(duration) / 1000
+        return Float(numberOfSentPackages * sizePerSentPackageInBytes * 8) / Float(duration) / 1_000_000
     }
     
     var description: String {
@@ -48,7 +48,8 @@ struct ConnectionMetricsClient: CustomStringConvertible {
         Ended \(endedSendingAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: endedSendingAt!))
         Took \(duration == nil ? "N/A" : duration!.formatted()) seconds
         
-        \(numberOfSentPackages) packages each \(sizePerSentPackageInBytes) bytes
+        \(numberOfSentPackages.formatted()) packages each \(sizePerSentPackageInBytes.formatted()) bytes
+        \((numberOfSentPackages * sizePerSentPackageInBytes).formatted()) bytes
         \(latencyCount) latencies counted
         Average Latency: \(averageLatency)
         Jitter: \(jitter)
@@ -102,7 +103,7 @@ struct ConnectionMetricsServer: CustomStringConvertible {
     
     private var mbitsPerSecond: Float? {
         guard let duration else { return nil }
-        return Float(receivedBytes * 8) / Float(duration) / 1000
+        return Float(receivedBytes * 8) / Float(duration) / 1_000_000
     }
     
     private var packageLoss: Float {
@@ -119,7 +120,7 @@ struct ConnectionMetricsServer: CustomStringConvertible {
         Remote ended \(remotePackageWasSentAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: remotePackageWasSentAt!))
 
         \(receivedBytes.formatted()) bytes
-        \(receivedPackages) of \(numberOfTotalPackages) packages
+        \(receivedPackages.formatted()) of \(numberOfTotalPackages.formatted()) packages
         \(packageLoss.formatted()) % package loss 
         \(mbitsPerSecond == nil ? "N/A" : mbitsPerSecond!.formatted()) mbit/sec
         

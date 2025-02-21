@@ -39,11 +39,16 @@ struct ClientView: View {
                             
                             Spacer()
                             
-                            Button("Start Test") {
-                                vm.send(.onStartTestingButtonPressedFor(resultProtocol))
+                            if vm.state.isTesting {
+                                ProgressView()
+                            } else {
+                                Button("Start Test") {
+                                    vm.send(.onStartTestingButtonPressedFor(resultProtocol))
+                                }
                             }
                         }
                     }
+                    .listStyle(.sidebar)
                 }
             }
         }
@@ -71,6 +76,7 @@ struct ClientView: View {
                 Button("Reload") {
                     vm.send(.onReloadButtonPressed)
                 }
+                .disabled(vm.state.isTesting)
             }
         }
     }

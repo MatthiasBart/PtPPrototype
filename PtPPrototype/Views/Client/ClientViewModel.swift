@@ -16,6 +16,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         var testResults: [TransportProtocol: String] = [:]
         var numberOfPackages: Int = 1000
         var sizeOfPackageInBytes: Int = 128
+        var isTesting: Bool = false
     }
     
     enum Action {
@@ -83,9 +84,11 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             
         case let .onStartTestingButtonPressedFor(transportProtocol):
             guard state.testResults.contains(where: { $0.key == transportProtocol }) else { return }
+            state.isTesting = true
             if let client = clients.first(where: { $0.transportProtocol == transportProtocol }) {
                 await client.startTesting(with: state.numberOfPackages, and: state.sizeOfPackageInBytes)
             }
+            state.isTesting = false
             
         case .onNumberOfPackagesChanged(let count):
             state.numberOfPackages = count

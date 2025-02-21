@@ -73,7 +73,11 @@ class ConnectionImpl: Connection {
     func collectMetrics() async -> String {
         if isClient {
             await withCheckedContinuation { continuation in
-                currentReport?.collect(queue: .global(), completion: { report in
+                guard let currentReport else {
+                    continuation.resume(returning: "No current Report")
+                    return
+                }
+                currentReport.collect(queue: .global(), completion: { report in
                     continuation.resume(returning: ConnectionMetricsClient(
                         startedSendingAt: self.startedSendingAt,
                         numberOfSentPackages: self.numberOfTotalPackages,
@@ -87,7 +91,11 @@ class ConnectionImpl: Connection {
             }
         } else {
             await withCheckedContinuation { continuation in
-                currentReport?.collect(queue: .global(), completion: { report in
+                guard let currentReport else {
+                    continuation.resume(returning: "No current Report")
+                    return
+                }
+                currentReport.collect(queue: .global(), completion: { report in
                     continuation.resume(returning: ConnectionMetricsServer(
                         receivedBytes: self.byteCount,
                         receivedPackages: self.packagesCount,
@@ -146,12 +154,9 @@ extension ConnectionImpl {
         
         startedSendingAt = .now
         
-        await withCheckedContinuation { continuation in
             for _ in 1...numberOfPackages  {
-                sendPackage(bytes: packageSizeInByte, numberOfPackages: numberOfPackages)
+                await sendPackage(bytes: packageSizeInByte, numberOfPackages: numberOfPackages)
             }
-            continuation.resume()
-        }
         
         endedSendingAt = .now
     }
@@ -172,27 +177,30 @@ extension ConnectionImpl {
     }
     
     //sends one individual package with the payload size `bytes` and info about the length of the package and overall number of packages
-    private func sendPackage(bytes: Int, content: UInt8 = 61, numberOfPackages: Int) {
-        let totalNumberPackageHeaderSize: Int = MemoryLayout<UInt32>.size
-        let dateDataSize: Int = MemoryLayout<UInt64>.size
-        
-        let junkData: [UInt8] = Array(repeating: content, count: bytes)
-        
-        var date = Date.now.timeIntervalSince1970.bitPattern.bigEndian
-        let dateData = Data(bytes: &date, count: dateDataSize)
-        
-        var totalNumberOfPackages = UInt32(numberOfPackages).bigEndian
-        let totalNumberOfPackagesData = Data(bytes: &totalNumberOfPackages, count: totalNumberPackageHeaderSize)
-        
-        //length of the payload plus length of total number of packages header information
-        var length = UInt32(bytes + totalNumberPackageHeaderSize + dateDataSize).bigEndian
-        let lenghtData = Data(bytes: &length, count: MemoryLayout<UInt32>.size)
-        
-        connection.send(content:  lenghtData + totalNumberOfPackagesData + dateData + junkData, isComplete: true, completion: .contentProcessed( { error in
-            if let error {
-                self.errors.append(error)
-            }
-        }))
+    private func sendPackage(bytes: Int, content: UInt8 = 61, numberOfPackages: Int) async {
+        await withCheckedContinuation { continuation in
+            let totalNumberPackageHeaderSize: Int = MemoryLayout<UInt32>.size
+            let dateDataSize: Int = MemoryLayout<UInt64>.size
+            
+            let junkData: [UInt8] = Array(repeating: content, count: bytes)
+            
+            var date = Date.now.timeIntervalSince1970.bitPattern.bigEndian
+            let dateData = Data(bytes: &date, count: dateDataSize)
+            
+            var totalNumberOfPackages = UInt32(numberOfPackages).bigEndian
+            let totalNumberOfPackagesData = Data(bytes: &totalNumberOfPackages, count: totalNumberPackageHeaderSize)
+            
+            //length of the payload plus length of total number of packages header information
+            var length = UInt32(bytes + totalNumberPackageHeaderSize + dateDataSize).bigEndian
+            let lenghtData = Data(bytes: &length, count: MemoryLayout<UInt32>.size)
+            
+            connection.send(content:  lenghtData + totalNumberOfPackagesData + dateData + junkData, isComplete: true, completion: .contentProcessed( { error in
+                if let error {
+                    self.errors.append(error)
+                }
+                continuation.resume()
+            }))
+        }
     }
 }
 
