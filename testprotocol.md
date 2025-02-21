@@ -21,6 +21,8 @@ do these different scenarios with:
 
 do every case 5 times
 
+also include seperately a comparison between tcp options, noDelay and noPush
+
 done -> inPr -> notStarted
 code -> test -> write thesis 
 

@@ -29,7 +29,8 @@ enum TransportProtocol: String, CaseIterable, Identifiable {
             let tcpOptions = NWProtocolTCP.Options()
             tcpOptions.enableKeepalive = true
             tcpOptions.keepaliveIdle = 2
-            tcpOptions.noDelay = true 
+//            tcpOptions.noDelay = true
+//            tcpOptions.noPush = false
             let parameters = NWParameters(tls: nil, tcp: tcpOptions)
             parameters.includePeerToPeer = true
             return parameters
