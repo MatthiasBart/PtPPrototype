@@ -19,6 +19,8 @@ do these different scenarios with:
 128/4096/16_384 byte per package
 1m/10m/30m/maxm
 
+do every case 5 times
+
 done -> inPr -> notStarted
 code -> test -> write thesis 
 
