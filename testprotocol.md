@@ -17,6 +17,7 @@ field
 do these different scenarios with: 
 100/1000/10_000/100_000 packages 
 128/4096/16_384 byte per package
+1m/10m/30m/maxm
 
 done -> inPr -> notStarted
 code -> test -> write thesis 
