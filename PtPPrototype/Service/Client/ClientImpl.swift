@@ -11,7 +11,7 @@ import Combine
 
 class ClientImpl<C: Connection>: Client {
     private var connection: (any Connection)?
-    private var browser: NWBrowser
+    private var browser: NWBrowser?
 
     var browserResults = CurrentValueSubject<Set<NWBrowser.Result>, Never>([])
     var testResult: CurrentValueSubject<String?, Never> = .init(nil)
@@ -19,14 +19,24 @@ class ClientImpl<C: Connection>: Client {
     
     init(transportProtocol: TransportProtocol) {
         self.transportProtocol = transportProtocol
-        self.browser = NWBrowser(
-            for: .bonjour(type: transportProtocol.type, domain: nil),
-            using: transportProtocol.parameters
-        )
+        
+        if transportProtocol != .quic {
+            self.browser = NWBrowser(
+                for: .bonjour(type: transportProtocol.type, domain: nil),
+                using: transportProtocol.parameters
+            )
+        }
     }
-
-    func createConnection(with browserResult: NWBrowser.Result) -> Error? {
-        let nwConnection = NWConnection(to: browserResult.endpoint, using: browser.parameters)
+    
+    func createConnection(with browserResult: NWBrowser.Result?) -> Error? {
+        var nwConnection: NWConnection
+        if let browserResult {
+            nwConnection = NWConnection(to: browserResult.endpoint, using: transportProtocol.parameters)
+        } else if transportProtocol == .quic {
+            nwConnection = NWConnection(host: .ipv4(.loopback), port: Config.quicPort, using: transportProtocol.parameters)
+        } else {
+            return URLError(.badURL)
+        }
         self.connection?.cancel()
         self.connection = nil
         self.connection = C(nwConnection)
@@ -44,7 +54,7 @@ class ClientImpl<C: Connection>: Client {
     }
     
     func startBrowsing() {
-        guard browser.queue == nil else { return } // assuming this indicates that the browser hasnt been started
+        guard let browser, browser.queue == nil else { return } // assuming this indicates that the browser hasnt been started
         
         browser.stateUpdateHandler = { [weak self] state in
             switch state {
@@ -66,11 +76,11 @@ class ClientImpl<C: Connection>: Client {
                 log.info("browser waiting")
             }
         }
-
+        
         browser.browseResultsChangedHandler = { [weak self] results, changes in
             self?.browserResults.send(results)
         }
-
-        browser.start(queue: .main)
+        
+        browser.start(queue: .global())
     }
 }

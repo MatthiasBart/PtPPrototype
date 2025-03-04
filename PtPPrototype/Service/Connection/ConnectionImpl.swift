@@ -55,19 +55,18 @@ class ConnectionImpl: Connection {
         self.connection.stateUpdateHandler = { [weak self] state in
             switch state {
             case .ready:
-                log.info("connection ready")
+                log.info("connection ready \(self?.connection.endpoint)")
                 DispatchQueue.global().async {
                     self?.currentReport = self?.connection.startDataTransferReport()
                     self?.receive()
                 }
-                //connection.requestEstablishmentReport(queue: <#T##DispatchQueue#>, completion: <#T##(NWConnection.EstablishmentReport?) -> Void##(NWConnection.EstablishmentReport?) -> Void##(_ report: NWConnection.EstablishmentReport?) -> Void#>)
                 
             default:
-                break
+                log.info("connection state \(state) \(self?.connection.endpoint)")
             }
         }
         
-        self.connection.start(queue: .main)
+        self.connection.start(queue: .global())
     }
     
     func collectMetrics() async -> String {

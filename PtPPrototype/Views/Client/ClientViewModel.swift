@@ -78,6 +78,12 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
                     } else {
                         state.testResults[client.transportProtocol] = "Connection create"
                     }
+                } else if client.transportProtocol == .quic {
+                    if let error = client.createConnection(with: nil) {
+                        state.testResults[client.transportProtocol] = "Connection failed " + error.localizedDescription
+                    } else {
+                        state.testResults[client.transportProtocol] = "Connection create"
+                    }
                 }
             }
             

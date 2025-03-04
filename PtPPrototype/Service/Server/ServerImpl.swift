@@ -19,14 +19,22 @@ class ServerImpl<C: Connection>: Server {
     
     init(transportProtocol: TransportProtocol) throws {
         self.transportProtocol = transportProtocol
-        listener = try NWListener(
-            service: .init(
-                name: UIDevice.current.name,
-                type: transportProtocol.type,
-                domain: nil
-            ),
-            using: transportProtocol.parameters
-        )
+
+        if transportProtocol == .quic {
+            listener = try NWListener(
+                using: transportProtocol.parameters,
+                on: Config.quicPort
+            )
+        } else {
+            listener = try NWListener(
+                service: .init(
+                    name: UIDevice.current.name,
+                    type: transportProtocol.type,
+                    domain: nil
+                ),
+                using: transportProtocol.parameters
+            )
+        }
     }
     
     func startAdvertising() {

@@ -8,7 +8,9 @@
 import Network
 
 struct Config {
-    static let serviceProtocols: [TransportProtocol] = [.udp, .tcp]
+    static let serviceProtocols: [TransportProtocol] = [.udp, .tcp, .quic]
+    
+    static let quicPort: NWEndpoint.Port = 61200
     
     static var clients: [any Client] {
         serviceProtocols.map { ClientImpl<ConnectionImpl>(transportProtocol: $0) }

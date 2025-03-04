@@ -7,6 +7,7 @@
 
 import Foundation
 import Network
+import Security
 
 enum TransportProtocol: String, CaseIterable, Identifiable {
     case udp
@@ -29,14 +30,50 @@ enum TransportProtocol: String, CaseIterable, Identifiable {
             let tcpOptions = NWProtocolTCP.Options()
             tcpOptions.enableKeepalive = true
             tcpOptions.keepaliveIdle = 2
-//            tcpOptions.noDelay = true
-//            tcpOptions.noPush = false
+            
             let parameters = NWParameters(tls: nil, tcp: tcpOptions)
             parameters.includePeerToPeer = true
             return parameters
             
         case .quic:
             let quicOptions = NWProtocolQUIC.Options()
+            quicOptions.alpn = ["test"]
+            
+            if let identityPath = Bundle.main.path(forResource: "QUICConnect2", ofType: "p12"),
+               let identityData = try? Data(contentsOf: URL(fileURLWithPath: identityPath)) {
+                
+                if let identity = loadIdentityFromPKCS12(p12Path: identityPath, password: "quic") {
+                    sec_protocol_options_set_local_identity(quicOptions.securityProtocolOptions, sec_identity_create(identity)!)
+                    log.info("local identity set")
+                    
+                    sec_protocol_options_set_verify_block(quicOptions.securityProtocolOptions, { _, sec_trust, completion in
+                        var trust: SecTrust = sec_trust_copy_ref(sec_trust).takeRetainedValue()
+                        
+                        guard let certificateChain = SecTrustCopyCertificateChain(trust) as? [SecCertificate],
+                              let serverCertificate = certificateChain.first else {
+                            completion(false)
+                            return
+                        }
+                        
+                        var certRef: SecCertificate?
+                        let statusCert = SecIdentityCopyCertificate(identity, &certRef)
+                        
+                        guard statusCert == errSecSuccess, let certificate = certRef else {
+                            completion(false)
+                            return
+                        }
+                        
+                        let isTrusting = CFEqual(serverCertificate, certificate)
+                        if isTrusting {
+                            log.info("verify block succeeded")
+                        }
+                        
+                        completion(isTrusting)
+                    }, .global())
+                }
+            }
+            
+            
             let parameters = NWParameters(quic: quicOptions)
             parameters.includePeerToPeer = true
             return parameters
@@ -52,5 +89,27 @@ enum TransportProtocol: String, CaseIterable, Identifiable {
         case .quic:
             "_txtchat._quic"
         }
+    }
+}
+
+func loadIdentityFromPKCS12(p12Path: String, password: String) -> SecIdentity? {
+    guard let p12Data = try? Data(contentsOf: URL(fileURLWithPath: p12Path)) else {
+        print("didnt find p12 file at path")
+        return nil
+    }
+    
+    let options: NSDictionary = [kSecImportExportPassphrase as String: password, kSecImportToMemoryOnly as String: kCFBooleanTrue!]
+    
+    var items: CFArray?
+    let status = SecPKCS12Import(p12Data as CFData, options, &items)
+    
+    if status == 0, let dict = (items as? [[String: Any]])?.first {
+        if let identity = dict[kSecImportItemIdentity as String] {
+            return identity as! SecIdentity
+        } else {
+            return nil
+        }
+    } else {
+        return nil
     }
 }
