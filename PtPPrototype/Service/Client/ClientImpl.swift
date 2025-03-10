@@ -33,7 +33,8 @@ class ClientImpl<C: Connection>: Client {
         if let browserResult {
             nwConnection = NWConnection(to: browserResult.endpoint, using: transportProtocol.parameters)
         } else if transportProtocol == .quic {
-            nwConnection = NWConnection(host: .ipv4(.loopback), port: Config.quicPort, using: transportProtocol.parameters)
+            //fe80::5088:6ff:febc:dc26%awdl0
+            nwConnection = NWConnection(host: .ipv6(.init("fe80::c841:89ff:fe26:108a%awdl0")!), port: Config.quicPort, using: transportProtocol.parameters)
         } else {
             return URLError(.badURL)
         }

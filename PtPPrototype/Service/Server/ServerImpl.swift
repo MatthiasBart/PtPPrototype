@@ -47,6 +47,9 @@ class ServerImpl<C: Connection>: Server {
         
         listener.stateUpdateHandler = { [weak self] state in
             self?.connectionStatus.value = "\(state)"
+            print("awdl: \(getAddress(for: .awdl))")
+            print("cellular: \(getAddress(for: .cellular))")
+            print("wifi: \(getAddress(for: .wifi))")
         }
         
         listener.start(queue: .global())
