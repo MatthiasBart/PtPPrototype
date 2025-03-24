@@ -15,7 +15,7 @@ class ConnectionImpl: Connection {
     private var startedSendingAt: Date?
     private var endedSendingAt: Date?
     private var sizePerPackage: Int = 0
-    private var latencies: [TimeInterval] = []
+    private var latencies: [UInt64] = []
     
     
     //Server
@@ -162,7 +162,7 @@ extension ConnectionImpl {
     
     private func sendLatencyJitterPackage(dateData: Data? = nil) {
         let dateDataSize: Int = MemoryLayout<UInt64>.size
-        var date = Date.now.timeIntervalSince1970.bitPattern.bigEndian
+        var date = mach_absolute_time().bigEndian
         let dateDataCurrent = Data(bytes: &date, count: dateDataSize)
         
         var length = UInt32(dateDataSize).bigEndian
@@ -232,8 +232,12 @@ extension ConnectionImpl {
             if let data {
                 if self.isClient {
                     let date = data.withUnsafeBytes { $0.loadUnaligned(as: UInt64.self) }.bigEndian
-                    let latency = Date().timeIntervalSince(Date(timeIntervalSince1970: TimeInterval(bitPattern: date)))
-                    self.latencies.append(latency)
+                    var now = mach_absolute_time()
+                    var elapsed = now - date
+                    var timebase: mach_timebase_info_data_t = .init()
+                    mach_timebase_info(&timebase)
+                    let latencyNanoSeconds = elapsed * UInt64(timebase.numer) / UInt64(timebase.denom)
+                    self.latencies.append(latencyNanoSeconds)
                 } else {
                     self.sendLatencyJitterPackage(dateData: data)
                 }

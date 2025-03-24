@@ -16,7 +16,7 @@ struct ConnectionMetricsClient: CustomStringConvertible {
     let endedSendingAt: Date?
     let errors: [any Error]
     
-    let latencies: [TimeInterval]
+    let latencies: [UInt64]
     
     let dataTransferReport: NWConnection.DataTransferReport.PathReport
     
@@ -25,11 +25,11 @@ struct ConnectionMetricsClient: CustomStringConvertible {
     }
     
     private var averageLatency: String {
-        (latencies.reduce(0, +) / Double(latencies.count)).formatted()
+        ((Double(latencies.reduce(0, +)) / Double(latencies.count)) / Double(NSEC_PER_SEC)).formatted()
     }
     
     private var jitter: String {
-        latencies.std().formatted()
+        (latencies.std() / Double(NSEC_PER_SEC)).formatted()
     }
     
     private var duration: TimeInterval? {
@@ -44,16 +44,15 @@ struct ConnectionMetricsClient: CustomStringConvertible {
     
     var description: String {
         """
-        Started \(startedSendingAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: startedSendingAt!))
-        Ended \(endedSendingAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: endedSendingAt!))
-        Took \(duration == nil ? "N/A" : duration!.formatted()) seconds
-        
-        \(numberOfSentPackages.formatted()) packages each \(sizePerSentPackageInBytes.formatted()) bytes
-        \((numberOfSentPackages * sizePerSentPackageInBytes).formatted()) bytes
         \(latencyCount) latencies counted
         Average Latency: \(averageLatency)
         Jitter: \(jitter)
         
+        Started \(startedSendingAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: startedSendingAt!))
+        Ended \(endedSendingAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: endedSendingAt!))
+        Took \(duration == nil ? "N/A" : duration!.formatted()) seconds
+        \(numberOfSentPackages.formatted()) packages each \(sizePerSentPackageInBytes.formatted()) bytes
+        \((numberOfSentPackages * sizePerSentPackageInBytes).formatted()) bytes
         \(mbitsPerSecond == nil ? "N/A" : mbitsPerSecond!.formatted()) mbit/sec
         
         Data transfer report from Network Framework:
@@ -162,18 +161,18 @@ protocol Connection: Identifiable {
 }
 
 //https://stackoverflow.com/questions/38422150/swift-array-extension-for-standard-deviation
-extension Array where Element: FloatingPoint {
-    func sum() -> Element {
-        return self.reduce(0, +)
+extension Array where Element ==  UInt64 {
+    func sum() -> Double {
+        return Double(self.reduce(0, +))
     }
 
-    func avg() -> Element {
-        return self.sum() / Element(self.count)
+    func avg() -> Double {
+        return self.sum() / Double(self.count)
     }
 
-    func std() -> Element {
+    func std() -> Double {
         let mean = self.avg()
-        let v = self.reduce(0, { $0 + ($1-mean)*($1-mean) })
-        return sqrt(v / (Element(self.count) - 1))
+        let v = self.reduce(0, { Double($0) + (Double($1)-mean)*(Double($1)-mean) })
+        return sqrt(Double(v) / Double(Element(self.count) - 1))
     }
 }
