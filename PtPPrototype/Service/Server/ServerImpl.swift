@@ -19,22 +19,15 @@ class ServerImpl<C: Connection>: Server {
     
     init(transportProtocol: TransportProtocol) throws {
         self.transportProtocol = transportProtocol
-
-        if transportProtocol == .quic {
-            listener = try NWListener(
-                using: transportProtocol.parameters,
-                on: Config.quicPort
-            )
-        } else {
-            listener = try NWListener(
-                service: .init(
-                    name: UIDevice.current.name,
-                    type: transportProtocol.type,
-                    domain: nil
-                ),
-                using: transportProtocol.parameters
-            )
-        }
+        
+        listener = try NWListener(
+            service: .init(
+                name: UIDevice.current.name,
+                type: transportProtocol.type,
+                domain: nil
+            ),
+            using: transportProtocol.parameters
+        )
     }
     
     func startAdvertising() {
@@ -47,9 +40,6 @@ class ServerImpl<C: Connection>: Server {
         
         listener.stateUpdateHandler = { [weak self] state in
             self?.connectionStatus.value = "\(state)"
-            print("awdl: \(getAddress(for: .awdl))")
-            print("cellular: \(getAddress(for: .cellular))")
-            print("wifi: \(getAddress(for: .wifi))")
         }
         
         listener.start(queue: .global())

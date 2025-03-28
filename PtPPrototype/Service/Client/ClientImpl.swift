@@ -12,7 +12,7 @@ import Combine
 class ClientImpl<C: Connection>: Client {
     private var connection: (any Connection)?
     private var browser: NWBrowser?
-
+    
     var browserResults = CurrentValueSubject<Set<NWBrowser.Result>, Never>([])
     var testResult: CurrentValueSubject<String?, Never> = .init(nil)
     let transportProtocol: TransportProtocol
@@ -20,21 +20,16 @@ class ClientImpl<C: Connection>: Client {
     init(transportProtocol: TransportProtocol) {
         self.transportProtocol = transportProtocol
         
-        if transportProtocol != .quic {
-            self.browser = NWBrowser(
-                for: .bonjour(type: transportProtocol.type, domain: nil),
-                using: transportProtocol.parameters
-            )
-        }
+        self.browser = NWBrowser(
+            for: .bonjour(type: transportProtocol.type, domain: nil),
+            using: transportProtocol.parameters
+        )
     }
     
     func createConnection(with browserResult: NWBrowser.Result?) -> Error? {
         var nwConnection: NWConnection
         if let browserResult {
             nwConnection = NWConnection(to: browserResult.endpoint, using: transportProtocol.parameters)
-        } else if transportProtocol == .quic {
-            //fe80::5088:6ff:febc:dc26%awdl0
-            nwConnection = NWConnection(host: .ipv6(.init("fe80::18f7:8aff:fe6d:5a55%awdl0")!), port: Config.quicPort, using: transportProtocol.parameters)
         } else {
             return URLError(.badURL)
         }
