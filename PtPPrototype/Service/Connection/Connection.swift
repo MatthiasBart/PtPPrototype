@@ -173,6 +173,6 @@ extension Array where Element ==  UInt64 {
     func std() -> Double {
         let mean = self.avg()
         let v = self.reduce(0, { Double($0) + (Double($1)-mean)*(Double($1)-mean) })
-        return sqrt(Double(v) / Double(Element(self.count) - 1))
+        return sqrt(Double(v) / Double(self.count - 1))
     }
 }
