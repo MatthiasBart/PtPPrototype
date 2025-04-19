@@ -16,5 +16,5 @@ protocol Client {
     
     func startTesting(with packageCount: Int, and packageSize: Int?) async
     func startBrowsing()
-    func createConnection(with browserResult: NWBrowser.Result?) -> Error? 
+    func createConnection(with browserResult: NWBrowser.Result) -> Error? 
 }

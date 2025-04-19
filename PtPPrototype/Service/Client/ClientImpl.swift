@@ -26,13 +26,9 @@ class ClientImpl<C: Connection>: Client {
         )
     }
     
-    func createConnection(with browserResult: NWBrowser.Result?) -> Error? {
-        var nwConnection: NWConnection
-        if let browserResult {
-            nwConnection = NWConnection(to: browserResult.endpoint, using: transportProtocol.parameters)
-        } else {
-            return URLError(.badURL)
-        }
+    func createConnection(with browserResult: NWBrowser.Result) -> Error? {
+        let nwConnection = NWConnection(to: browserResult.endpoint, using: transportProtocol.parameters)
+        
         self.connection?.cancel()
         self.connection = nil
         self.connection = C(nwConnection)

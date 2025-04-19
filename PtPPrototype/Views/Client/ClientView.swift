@@ -112,7 +112,7 @@ extension ClientView {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .padding()
             
-            Text("Size of payload per package:")
+            Text("Bytes per package:")
             TextField("128", text: sizePerPackageBinding)
                 .focused($focusState, equals: .sizePerPackage)
                 .keyboardType(.numberPad)

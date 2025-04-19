@@ -44,8 +44,8 @@ struct ConnectionMetricsClient: CustomStringConvertible {
     
     var description: String {
         """
-        \(latencyCount) latencies counted
-        Average Latency: \(averageLatency)
+        \(latencyCount) RTTs counted
+        Average RTT: \(averageLatency)
         Jitter: \(jitter)
         
         Started \(startedSendingAt == nil ? "N/A" : CustomDateFormatter.precise.string(from: startedSendingAt!))
