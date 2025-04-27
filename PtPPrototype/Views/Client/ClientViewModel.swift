@@ -13,19 +13,27 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
     struct State {
         var advertiserNames = [String]()
         var isShowingBrowserView: Bool = true
-        var testResults: [TransportProtocol: String] = [:]
+        var testResults: [TransportProtocol: TestResultRepresentable?] = [:]
         var numberOfPackages: Int = 1000
         var sizeOfPackageInBytes: Int = 128
         var isTesting: Bool = false
+        var scenario: String = ""
+        var distance: String = ""
+        var alertString: String? = nil
     }
     
     enum Action {
         case onAppear
         case onTapOnAdvertiserName(String)
         case onStartTestingButtonPressedFor(TransportProtocol)
+        case onSaveResultButtonPressedFor(TransportProtocol)
         case onReloadButtonPressed
+        
         case onNumberOfPackagesChanged(Int)
         case onSizeOfPackageInBytesChanged(Int)
+        case onScenarioChanged(String)
+        case onDistanceChanged(String)
+        case onAlertOkButtonPressed
     }
     
     @Published
@@ -53,6 +61,22 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
     @MainActor
     func action(_ action: Action) async {
         switch action {
+        case let .onSaveResultButtonPressedFor(transportProtocol):
+            if let result = state.testResults.first(where: { $0.key == transportProtocol })?.value {
+                let fileName = "Client-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard)).csv"
+                
+                ResultSaver.save(
+                    name: fileName,
+                    content: result.toCSV(
+                        in: state.scenario,
+                        with: state.distance,
+                        using: transportProtocol.rawValue.uppercased()
+                    )
+                )
+                
+                state.alertString = "File saved"
+            }
+            
         case .onReloadButtonPressed:
             cancelRunningTasks()
             state.isShowingBrowserView = true
@@ -73,10 +97,10 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             state.isShowingBrowserView = false
             for client in clients {
                 if let browserResult = client.browserResults.value.first(where: { $0.name == advertiserName }) {
-                    if let error = client.createConnection(with: browserResult) {
-                        state.testResults[client.transportProtocol] = "Connection failed " + error.localizedDescription
+                    if client.createConnection(with: browserResult) == nil {
+                        state.testResults[client.transportProtocol] = .empty
                     } else {
-                        state.testResults[client.transportProtocol] = "Connection create"
+                        state.alertString = "Connection refused for \(client.transportProtocol)"
                     }
                 }
             }
@@ -94,6 +118,15 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             
         case .onSizeOfPackageInBytesChanged(let size):
             state.sizeOfPackageInBytes = size
+            
+        case .onDistanceChanged(let distance):
+            state.distance = distance
+            
+        case .onScenarioChanged(let scenario):
+            state.scenario = scenario
+            
+        case .onAlertOkButtonPressed:
+            state.alertString = nil
         }
     }
 }
@@ -117,7 +150,7 @@ extension ClientViewModel {
             testResultsTasks.insert(
                 Task { @MainActor in
                     for await testResult in client.testResult.values {
-                        state.testResults[client.transportProtocol] = testResult?.description ?? "No Result for this protocol."
+                        state.testResults[client.transportProtocol] = testResult
                     }
                 }
             )

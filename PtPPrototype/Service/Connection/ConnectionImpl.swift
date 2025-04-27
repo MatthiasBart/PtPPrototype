@@ -69,11 +69,11 @@ class ConnectionImpl: Connection {
         self.connection.start(queue: .global())
     }
     
-    func collectMetrics() async -> String {
+    func collectMetrics() async throws -> TestResultRepresentable {
         if isClient {
-            await withCheckedContinuation { continuation in
+            try await withCheckedThrowingContinuation { continuation in
                 guard let currentReport else {
-                    continuation.resume(returning: "No current Report")
+                    continuation.resume(throwing: TestError.noReport)
                     return
                 }
                 currentReport.collect(queue: .global(), completion: { report in
@@ -85,13 +85,13 @@ class ConnectionImpl: Connection {
                         errors: self.errors,
                         latencies: self.latencies,
                         dataTransferReport: report.aggregatePathReport
-                    ).description)
+                    ))
                 })
             }
         } else {
-            await withCheckedContinuation { continuation in
+            try await withCheckedThrowingContinuation { continuation in
                 guard let currentReport else {
-                    continuation.resume(returning: "No current Report")
+                    continuation.resume(throwing: TestError.noReport)
                     return
                 }
                 currentReport.collect(queue: .global(), completion: { report in
@@ -105,7 +105,7 @@ class ConnectionImpl: Connection {
                         remotePackageWasSentAt: self.remoteLastPackageWasSentAt,
                         errors: self.errors,
                         dataTransferReport: report.aggregatePathReport
-                    ).description)
+                    ))
                 })
             }
         }

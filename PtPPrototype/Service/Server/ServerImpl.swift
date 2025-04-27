@@ -49,8 +49,8 @@ class ServerImpl<C: Connection>: Server {
         listener.cancel()
     }
     
-    func getTestResult() async -> String? {
-        let metrics = await self.connection?.collectMetrics()
+    func getTestResult() async -> TestResultRepresentable? {
+        let metrics = try? await self.connection?.collectMetrics()
         connection?.resetMetrics()
         return metrics
     }

@@ -10,14 +10,15 @@ import SwiftUI
 
 class ServerViewModel: ObservableObject, AsyncViewModel {
     struct State {
-        var testResults: [TransportProtocol: String] = [:]
+        var testResults: [TransportProtocol: TestResultRepresentable] = [:]
         var connectionStatus: [TransportProtocol: String] = [:]
     }
     
     enum Action {
         case onAppear
         case onReloadButtonPressed
-        case onGetTestResultsButtonPressed
+        case onGetTestResultsButtonPressedFor(TransportProtocol)
+        case onSaveResultButtonPressedFor(TransportProtocol)
     }
     
     @Published
@@ -52,9 +53,15 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
                 server.startAdvertising()
             }
             
-        case .onGetTestResultsButtonPressed:
-            for server in servers {
-                self.state.testResults[server.transportProtocol] = await server.getTestResult() ?? "N/A"
+        case let .onSaveResultButtonPressedFor(transportProtocol):
+            if let server = servers.first(where: { $0.transportProtocol == transportProtocol }) {
+                
+            }
+            break
+
+        case let .onGetTestResultsButtonPressedFor(transportProtocol):
+            if let server = servers.first(where: { $0.transportProtocol == transportProtocol }) {
+                self.state.testResults[server.transportProtocol] = await server.getTestResult()
             }
         }
     }

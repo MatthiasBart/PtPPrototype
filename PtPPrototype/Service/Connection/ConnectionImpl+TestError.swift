@@ -10,5 +10,6 @@ import Foundation
 extension ConnectionImpl {
     enum TestError: Error {
         case streamWriteError
+        case noReport
     }
 }

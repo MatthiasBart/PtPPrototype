@@ -13,5 +13,5 @@ protocol Server {
     var connectionStatus: CurrentValueSubject<String?, Never> { get }
     func startAdvertising()
     func stopAdvertising()
-    func getTestResult() async -> String?
+    func getTestResult() async -> TestResultRepresentable?
 }

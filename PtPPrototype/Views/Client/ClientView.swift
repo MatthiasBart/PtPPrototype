@@ -21,6 +21,8 @@ struct ClientView: View {
     enum FocusedTextField: Hashable {
         case numberOfPackages
         case sizePerPackage
+        case scenario
+        case distance
     }
     
     var body: some View {
@@ -30,14 +32,18 @@ struct ClientView: View {
                     vm.send(.onTapOnAdvertiserName(advertiserName))
                 }
             } else {
-                List(Array(vm.state.testResults.keys)) { resultProtocol in
+                List(Array(vm.state.testResults.keys).sorted(by: { $0.rawValue < $1.rawValue })) { resultProtocol in
                     Section {
-                        Text(vm.state.testResults[resultProtocol] ?? "Protocol not found in test results.")
+                        Text(vm.state.testResults[resultProtocol]??.description ?? "Protocol not found in test results.")
                     } header: {
                         HStack {
                             Text(resultProtocol.rawValue)
                             
                             Spacer()
+                            
+                            Button("Save Result") {
+                                vm.send(.onSaveResultButtonPressedFor(resultProtocol))
+                            }
                             
                             if vm.state.isTesting {
                                 ProgressView()
@@ -55,28 +61,32 @@ struct ClientView: View {
         .onAppear {
             vm.send(.onAppear)
         }
-        .sheet(isPresented: $isShowingModificationSheet, content: {
-            modificatonSheet
-                .presentationDetents([.medium, .large])
+        .alert("", isPresented: .constant(vm.state.alertString != nil), actions: {
+            Button("OK") {
+                vm.send(.onAlertOkButtonPressed)
+            }
+        }, message: {
+            Text(vm.state.alertString ?? "")
         })
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isShowingModificationSheet = true
+                NavigationLink {
+                    modificatonSheet
+                        .toolbar {
+                            ToolbarItem(placement: .keyboard) {
+                                Button("Done") {
+                                    focusState = nil
+                                }
+                            }
+                        }
                 } label: {
                     Image(systemName: "gear")
-                }
-            }
-            ToolbarItem(placement: .keyboard) {
-                Button("Done") {
-                    focusState = nil
                 }
             }
             ToolbarItem(placement: .topBarLeading) {
                 Button("Reload") {
                     vm.send(.onReloadButtonPressed)
                 }
-                .disabled(vm.state.isTesting)
             }
         }
     }
@@ -98,28 +108,60 @@ extension ClientView {
             vm.send(.onSizeOfPackageInBytesChanged(Int(newValue) ?? 0))
         }
     }
+    
+    var scenarioBinding: Binding<String> {
+        Binding {
+            vm.state.scenario
+        } set: { newValue in
+            vm.send(.onScenarioChanged(newValue))
+        }
+    }
+    
+    var distanceBinding: Binding<String> {
+        Binding {
+            vm.state.distance
+        } set: { newValue in
+            vm.send(.onDistanceChanged(newValue))
+        }
+    }
 }
 
 extension ClientView {
     private var modificatonSheet: some View {
-        VStack {
+        ScrollView {
+            Text("Scenario")
+            TextField("Underground", text: scenarioBinding)
+                .textField(for: $focusState, equals: .scenario)
+            
+            Divider()
+            
+            Text("Distance")
+            TextField("10", text: distanceBinding)
+                .textField(for: $focusState, equals: .distance)
+            
+            Divider()
+
             Text("Number of packages to send:")
             TextField("1000", text: numberOfPackagesBinding)
-                .focused($focusState, equals: .numberOfPackages)
+                .textField(for: $focusState, equals: .sizePerPackage)
                 .keyboardType(.numberPad)
-                .padding()
-                .background(Color.systemGroupedBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding()
+
+            Divider()
             
             Text("Bytes per package:")
             TextField("128", text: sizePerPackageBinding)
-                .focused($focusState, equals: .sizePerPackage)
+                .textField(for: $focusState, equals: .sizePerPackage)
                 .keyboardType(.numberPad)
-                .padding()
-                .background(Color.systemGroupedBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding()
         }
+    }
+}
+
+fileprivate extension View {
+    func textField(for focusState: FocusState<ClientView.FocusedTextField?>.Binding, equals: ClientView.FocusedTextField) -> some View {
+        focused(focusState, equals: equals)
+        .padding()
+        .background(Color.systemGroupedBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding()
     }
 }

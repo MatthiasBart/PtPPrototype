@@ -10,11 +10,12 @@ import Foundation
 import Combine
 
 class ClientImpl<C: Connection>: Client {
+    
     private var connection: (any Connection)?
     private var browser: NWBrowser?
     
     var browserResults = CurrentValueSubject<Set<NWBrowser.Result>, Never>([])
-    var testResult: CurrentValueSubject<String?, Never> = .init(nil)
+    var testResult: CurrentValueSubject<TestResultRepresentable?, Never> = .init(nil)
     let transportProtocol: TransportProtocol
     
     init(transportProtocol: TransportProtocol) {
@@ -41,7 +42,7 @@ class ClientImpl<C: Connection>: Client {
     
     func startTesting(with packageCount: Int, and packageSize: Int?) async {
         await connection?.startTesting(numberOfPackages: packageCount, packageSizeInByte: packageSize ?? C.payloadSize)
-        self.testResult.value = await connection?.collectMetrics()
+        self.testResult.value = try? await connection?.collectMetrics()
         connection?.resetMetrics()
     }
     
