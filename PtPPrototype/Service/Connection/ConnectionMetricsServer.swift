@@ -46,7 +46,7 @@ struct ConnectionMetricsServer: TestResultRepresentable {
     
     func toCSV(in scenario: String, with distance: String, using transportProtocol: String) -> String {
         CSVHeaders.transportProtocol + ", " + CSVHeaders.scenario + ", " + CSVHeaders.distance + ", " + CSVHeaders.transferSpeed + ", " + CSVHeaders.packageLoss + ", " + CSVHeaders.packageSize + ", " + CSVHeaders.numberOfPackages + "\n" +
-        "\(transportProtocol), \(scenario), \(distance), \(mbitsPerSecond == nil ? "N/A" : mbitsPerSecond!.formatted()), \(packageLoss.formatted()), \(sizePerPackage), \(numberOfTotalPackages)"
+        "\(transportProtocol), \(scenario), \(distance), \(mbitsPerSecond == nil ? "N/A" : mbitsPerSecond!.formatted().replacingOccurrences(of: ",", with: ".")), \(packageLoss.formatted().replacingOccurrences(of: ",", with: ".")), \(sizePerPackage), \(numberOfTotalPackages)"
     }
     
     var description: String {

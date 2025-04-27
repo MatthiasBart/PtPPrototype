@@ -156,8 +156,8 @@ extension ClientView {
     }
 }
 
-fileprivate extension View {
-    func textField(for focusState: FocusState<ClientView.FocusedTextField?>.Binding, equals: ClientView.FocusedTextField) -> some View {
+extension View {
+    func textField<V>(for focusState: FocusState<V>.Binding, equals: V) -> some View where V: Hashable {
         focused(focusState, equals: equals)
         .padding()
         .background(Color.systemGroupedBackground)

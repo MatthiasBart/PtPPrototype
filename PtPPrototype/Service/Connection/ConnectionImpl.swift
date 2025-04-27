@@ -181,7 +181,7 @@ extension ConnectionImpl {
             let totalNumberPackageHeaderSize: Int = MemoryLayout<UInt32>.size
             let dateDataSize: Int = MemoryLayout<UInt64>.size
             
-            let junkData: [UInt8] = Array(repeating: content, count: bytes)
+            let junkData: [UInt8] = Array(repeating: content, count: bytes - 16)
             
             var date = Date.now.timeIntervalSince1970.bitPattern.bigEndian
             let dateData = Data(bytes: &date, count: dateDataSize)

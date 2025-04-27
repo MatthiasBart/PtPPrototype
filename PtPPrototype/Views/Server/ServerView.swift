@@ -15,6 +15,14 @@ struct ServerView: View {
     @State
     private var isShowingModificationSheet = false
     
+    enum FocusedTextField {
+        case scenario
+        case distance
+    }
+    
+    @FocusState
+    private var focusState: FocusedTextField?
+    
     var body: some View {
         VStack {
             List(Config.serviceProtocols.sorted(by: { $0.rawValue < $1.rawValue })) { resultProtocol in
@@ -40,6 +48,13 @@ struct ServerView: View {
                 }
             }
         }
+        .alert("", isPresented: .constant(vm.state.alertString != nil), actions: {
+            Button("OK") {
+                vm.send(.onAlertOKButtonPressed)
+            }
+        }, message: {
+            Text(vm.state.alertString ?? "")
+        })
         .onAppear {
             vm.send(.onAppear)
         }
@@ -51,12 +66,46 @@ struct ServerView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    isShowingModificationSheet = true
+                NavigationLink {
+                    modificatonSheet
                 } label: {
                     Image(systemName: "gear")
                 }
             }
+        }
+    }
+}
+
+extension ServerView {
+var scenarioBinding: Binding<String> {
+    Binding {
+        vm.state.scenario
+    } set: { newValue in
+        vm.send(.onScenarioChanged(newValue))
+    }
+}
+
+var distanceBinding: Binding<String> {
+    Binding {
+        vm.state.distance
+    } set: { newValue in
+        vm.send(.onDistanceChanged(newValue))
+    }
+}
+}
+
+extension ServerView {
+    private var modificatonSheet: some View {
+        ScrollView {
+            Text("Scenario")
+            TextField("Underground", text: scenarioBinding)
+                .textField(for: $focusState, equals: .scenario)
+            
+            Divider()
+            
+            Text("Distance")
+            TextField("10", text: distanceBinding)
+                .textField(for: $focusState, equals: .distance)
         }
     }
 }
