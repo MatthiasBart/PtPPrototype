@@ -24,7 +24,7 @@ struct ConnectionMetricsClient: TestResultRepresentable {
     }
     
     private var averageLatency: String {
-        ((Double(latencies.reduce(0, +)) / Double(latencies.count)) / Double(NSEC_PER_MSEC)).formatted().replacingOccurrences(of: ",", with: ".")
+        (latencies.avg() / Double(NSEC_PER_MSEC)).formatted().replacingOccurrences(of: ",", with: ".")
     }
     
     private var jitter: String {

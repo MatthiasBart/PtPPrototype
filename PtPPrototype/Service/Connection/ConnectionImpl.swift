@@ -143,7 +143,7 @@ extension ConnectionImpl {
         sizePerPackage = packageSizeInByte
         
         await withCheckedContinuation { continuation in
-            for _ in 1...100 {
+            for _ in 1...1000 {
                 sendLatencyJitterPackage()
             }
             continuation.resume()
@@ -190,7 +190,7 @@ extension ConnectionImpl {
             let totalNumberOfPackagesData = Data(bytes: &totalNumberOfPackages, count: totalNumberPackageHeaderSize)
             
             //length of the payload plus length of total number of packages header information
-            var length = UInt32(bytes + totalNumberPackageHeaderSize + dateDataSize).bigEndian
+            var length = UInt32(bytes - 16 + totalNumberPackageHeaderSize + dateDataSize).bigEndian
             let lenghtData = Data(bytes: &length, count: MemoryLayout<UInt32>.size)
             
             connection.send(content:  lenghtData + totalNumberOfPackagesData + dateData + junkData, isComplete: true, completion: .contentProcessed( { error in
@@ -232,8 +232,8 @@ extension ConnectionImpl {
             if let data {
                 if self.isClient {
                     let date = data.withUnsafeBytes { $0.loadUnaligned(as: UInt64.self) }.bigEndian
-                    var now = mach_absolute_time()
-                    var elapsed = now - date
+                    let now = mach_absolute_time()
+                    let elapsed = now - date
                     var timebase: mach_timebase_info_data_t = .init()
                     mach_timebase_info(&timebase)
                     let latencyNanoSeconds = elapsed * UInt64(timebase.numer) / UInt64(timebase.denom)

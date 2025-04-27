@@ -51,7 +51,7 @@ struct ConnectionMetricsServer: TestResultRepresentable {
     
     var description: String {
                 """
-        \(mbitsPerSecond == nil ? "N/A" : mbitsPerSecond!.formatted()) mbit/sec
+        \(mbitsPerSecond == nil ? "N/A" : mbitsPerSecond!.formatted()) Mbps
         \(duration == nil ? "N/A" : duration!.formatted()) seconds
         \(packageLoss.formatted()) % package loss 
         
