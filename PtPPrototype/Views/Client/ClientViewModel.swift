@@ -20,6 +20,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         var scenario: String = Scenario.innerCity.rawValue
         var distance: String = Distance.meter1.rawValue
         var alertString: String? = nil
+        var testCount = 0
     }
     
     enum Action {
@@ -113,6 +114,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             state.isShowingBrowserView = true
             state.advertiserNames = []
             state.testResults = [:]
+            state.isTesting = false
             self.clients = Config.clients
             await self.action(.onAppear)
             
@@ -142,20 +144,25 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             if let client = clients.first(where: { $0.transportProtocol == transportProtocol }) {
                 await client.startTesting(with: state.numberOfPackages, and: state.sizeOfPackageInBytes)
             }
+            state.testCount += 1
             state.isTesting = false
             
         case .onNumberOfPackagesChanged(let count):
             state.numberOfPackages = count
+            state.testCount = 0
             
         case .onSizeOfPackageInBytesChanged(let size):
             state.sizeOfPackageInBytes = size
-            
+            state.testCount = 0
+
         case .onDistanceChanged(let distance):
             state.distance = distance
-            
+            state.testCount = 0
+
         case .onScenarioChanged(let scenario):
             state.scenario = scenario
-            
+            state.testCount = 0
+
         case .onAlertOkButtonPressed:
             state.alertString = nil
         }

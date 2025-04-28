@@ -66,6 +66,7 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
             }
             self.servers = Config.servers
             await self.action(.onAppear)
+            await self.action(.onGetAllButtonPressed)
             
         case .onAppear:
             cancelRunningTasks()

@@ -61,6 +61,7 @@ struct ClientView: View {
         .toolbar {
             ToolbarItem(placement: .bottomBar) {
                 VStack {
+                    Text("Tested since change: \(vm.state.testCount)")
                     Text("\(vm.state.scenario)-\(vm.state.distance)m-\(vm.state.numberOfPackages)-\(vm.state.sizeOfPackageInBytes)B")
                     
                     Button("Save All") {

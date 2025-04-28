@@ -168,9 +168,9 @@ extension ConnectionImpl {
         var length = UInt32(dateDataSize).bigEndian
         let lengthData = Data(bytes: &length, count: MemoryLayout<UInt32>.size)
         
-        connection.send(content: lengthData + (dateData ?? dateDataCurrent), completion: .contentProcessed({ error in
+        connection.send(content: lengthData + (dateData ?? dateDataCurrent), completion: .contentProcessed({ [weak self] error in
             if let error {
-                self.errors.append(error)
+                self?.errors.append(error)
             }
         }))
     }
