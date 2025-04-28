@@ -64,8 +64,16 @@ struct ClientView: View {
                     Text("Tested since change: \(vm.state.testCount)")
                     Text("\(vm.state.scenario)-\(vm.state.distance)m-\(vm.state.numberOfPackages)-\(vm.state.sizeOfPackageInBytes)B")
                     
-                    Button("Save All") {
-                        vm.send(.onSaveAllButtonPressed)
+                    HStack {
+                        Button("Save All") {
+                            vm.send(.onSaveAllButtonPressed)
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        Button("Test All") {
+                            vm.send(.onTestAllButtonPressed)
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
                 }
             }
@@ -140,7 +148,25 @@ extension ClientView {
 
 extension ClientView {
     private var modificatonSheet: some View {
-        ScrollView {
+        VStack {
+            Picker("Package Size", selection: sizePerPackageBinding) {
+                ForEach(PackageSize.allCases) { packageSize in
+                    Text(packageSize.rawValue)
+                        .tag(packageSize.rawValue)
+                }
+            }
+            
+            Divider()
+
+            Picker("Number of Packages", selection: numberOfPackagesBinding) {
+                ForEach(PackageNumber.allCases) { packageNumber in
+                    Text(packageNumber.rawValue)
+                        .tag(packageNumber.rawValue)
+                }
+            }
+            
+            Spacer()
+            
             Picker("Scenario", selection: scenarioBinding) {
                 ForEach(Scenario.allCases) { scenario in
                     Text(scenario.rawValue)
@@ -154,24 +180,6 @@ extension ClientView {
                 ForEach(Distance.allCases) { distance in
                     Text(distance.rawValue)
                         .tag(distance.rawValue)
-                }
-            }
-            
-            Divider()
-
-            Picker("Number of Packages", selection: numberOfPackagesBinding) {
-                ForEach(PackageNumber.allCases) { packageNumber in
-                    Text(packageNumber.rawValue)
-                        .tag(packageNumber.rawValue)
-                }
-            }
-
-            Divider()
-            
-            Picker("Package Size", selection: sizePerPackageBinding) {
-                ForEach(PackageSize.allCases) { packageSize in
-                    Text(packageSize.rawValue)
-                        .tag(packageSize.rawValue)
                 }
             }
         }

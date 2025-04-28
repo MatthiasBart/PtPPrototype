@@ -14,8 +14,8 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         var advertiserNames = [String]()
         var isShowingBrowserView: Bool = true
         var testResults: [TransportProtocol: TestResultRepresentable?] = [:]
-        var numberOfPackages: Int = 1000
-        var sizeOfPackageInBytes: Int = 128
+        var numberOfPackages: Int = Int(PackageNumber.number100.rawValue)!
+        var sizeOfPackageInBytes: Int = Int(PackageSize.size128.rawValue)!
         var isTesting: Bool = false
         var scenario: String = Scenario.innerCity.rawValue
         var distance: String = Distance.meter1.rawValue
@@ -36,6 +36,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         case onDistanceChanged(String)
         case onAlertOkButtonPressed
         case onSaveAllButtonPressed
+        case onTestAllButtonPressed
     }
     
     @Published
@@ -162,6 +163,11 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         case .onScenarioChanged(let scenario):
             state.scenario = scenario
             state.testCount = 0
+            
+        case .onTestAllButtonPressed:
+            for client in clients {
+                await self.action(.onStartTestingButtonPressedFor(client.transportProtocol))
+            }
 
         case .onAlertOkButtonPressed:
             state.alertString = nil

@@ -81,12 +81,14 @@ struct ServerView: View {
                         Button("Get All") {
                             vm.send(.onGetAllButtonPressed)
                         }
+                        .buttonStyle(.borderedProminent)
                         
                         Divider()
                         
                         Button("Save All") {
                             vm.send(.onSaveAllButtonPressed)
                         }
+                        .buttonStyle(.borderedProminent)
                     }
                 }
             }
