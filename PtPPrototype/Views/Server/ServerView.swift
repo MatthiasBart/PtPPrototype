@@ -79,13 +79,13 @@ struct ServerView: View {
                     
                     HStack {
                         Button("Get All") {
-                            
+                            vm.send(.onGetAllButtonPressed)
                         }
                         
                         Divider()
                         
                         Button("Save All") {
-                            
+                            vm.send(.onSaveAllButtonPressed)
                         }
                     }
                 }

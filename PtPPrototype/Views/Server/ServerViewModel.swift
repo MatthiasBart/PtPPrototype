@@ -13,8 +13,8 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
         var testResults: [TransportProtocol: TestResultRepresentable] = [:]
         var connectionStatus: [TransportProtocol: String] = [:]
         
-        var scenario: String = ""
-        var distance: String = ""
+        var scenario: String = Scenario.innerCity.rawValue
+        var distance: String = Distance.meter1.rawValue
         
         var alertString: String? = nil
     }

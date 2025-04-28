@@ -60,7 +60,13 @@ struct ClientView: View {
         }
         .toolbar {
             ToolbarItem(placement: .bottomBar) {
-                Text("\(vm.state.scenario)-\(vm.state.distance)m-\(vm.state.numberOfPackages)-\(vm.state.sizeOfPackageInBytes)B")
+                VStack {
+                    Text("\(vm.state.scenario)-\(vm.state.distance)m-\(vm.state.numberOfPackages)-\(vm.state.sizeOfPackageInBytes)B")
+                    
+                    Button("Save All") {
+                        vm.send(.onSaveAllButtonPressed)
+                    }
+                }
             }
         }
         .onAppear {

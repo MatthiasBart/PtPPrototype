@@ -17,8 +17,8 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         var numberOfPackages: Int = 1000
         var sizeOfPackageInBytes: Int = 128
         var isTesting: Bool = false
-        var scenario: String = ""
-        var distance: String = ""
+        var scenario: String = Scenario.innerCity.rawValue
+        var distance: String = Distance.meter1.rawValue
         var alertString: String? = nil
     }
     
