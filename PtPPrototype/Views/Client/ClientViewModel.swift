@@ -34,6 +34,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
         case onScenarioChanged(String)
         case onDistanceChanged(String)
         case onAlertOkButtonPressed
+        case onSaveAllButtonPressed
     }
     
     @Published
@@ -61,20 +62,50 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
     @MainActor
     func action(_ action: Action) async {
         switch action {
+        case .onSaveAllButtonPressed:
+            for (transportProtocol, result) in state.testResults {
+                guard let result else {
+                    state.alertString = "Error: No results for \(transportProtocol.rawValue)"
+                    break
+                }
+                
+                let fileName = "Client-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard)).csv"
+                
+                do {
+                    try ResultSaver.save(
+                        name: fileName,
+                        content: result.toCSV(
+                            in: state.scenario,
+                            with: state.distance,
+                            using: transportProtocol.rawValue.uppercased()
+                        )
+                    )
+                } catch {
+                    state.alertString = "Error while saving \(transportProtocol.rawValue)"
+                    break
+                }
+            }
+            if state.alertString == nil {
+                state.alertString = "Results saved!"
+            }
+            
         case let .onSaveResultButtonPressedFor(transportProtocol):
             if let result = state.testResults.first(where: { $0.key == transportProtocol })?.value {
                 let fileName = "Client-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard)).csv"
                 
-                ResultSaver.save(
-                    name: fileName,
-                    content: result.toCSV(
-                        in: state.scenario,
-                        with: state.distance,
-                        using: transportProtocol.rawValue.uppercased()
+                do {
+                    try ResultSaver.save(
+                        name: fileName,
+                        content: result.toCSV(
+                            in: state.scenario,
+                            with: state.distance,
+                            using: transportProtocol.rawValue.uppercased()
+                        )
                     )
-                )
-                
-                state.alertString = "File saved"
+                    state.alertString = "File saved"
+                } catch {
+                    state.alertString = "Error while saving \(transportProtocol.rawValue)"
+                }
             }
             
         case .onReloadButtonPressed:

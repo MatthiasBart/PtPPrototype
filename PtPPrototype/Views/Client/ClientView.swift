@@ -58,6 +58,11 @@ struct ClientView: View {
                 }
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .bottomBar) {
+                Text("\(vm.state.scenario)-\(vm.state.distance)m-\(vm.state.numberOfPackages)-\(vm.state.sizeOfPackageInBytes)B")
+            }
+        }
         .onAppear {
             vm.send(.onAppear)
         }
@@ -129,29 +134,39 @@ extension ClientView {
 extension ClientView {
     private var modificatonSheet: some View {
         ScrollView {
-            Text("Scenario")
-            TextField("Underground", text: scenarioBinding)
-                .textField(for: $focusState, equals: .scenario)
+            Picker("Scenario", selection: scenarioBinding) {
+                ForEach(Scenario.allCases) { scenario in
+                    Text(scenario.rawValue)
+                        .tag(scenario.rawValue)
+                }
+            }
             
             Divider()
             
-            Text("Distance")
-            TextField("10", text: distanceBinding)
-                .textField(for: $focusState, equals: .distance)
+            Picker("Distance", selection: distanceBinding) {
+                ForEach(Distance.allCases) { distance in
+                    Text(distance.rawValue)
+                        .tag(distance.rawValue)
+                }
+            }
             
             Divider()
 
-            Text("Number of packages to send:")
-            TextField("1000", text: numberOfPackagesBinding)
-                .textField(for: $focusState, equals: .sizePerPackage)
-                .keyboardType(.numberPad)
+            Picker("Number of Packages", selection: numberOfPackagesBinding) {
+                ForEach(PackageNumber.allCases) { packageNumber in
+                    Text(packageNumber.rawValue)
+                        .tag(packageNumber.rawValue)
+                }
+            }
 
             Divider()
             
-            Text("Bytes per package:")
-            TextField("128", text: sizePerPackageBinding)
-                .textField(for: $focusState, equals: .sizePerPackage)
-                .keyboardType(.numberPad)
+            Picker("Package Size", selection: sizePerPackageBinding) {
+                ForEach(PackageSize.allCases) { packageSize in
+                    Text(packageSize.rawValue)
+                        .tag(packageSize.rawValue)
+                }
+            }
         }
     }
 }

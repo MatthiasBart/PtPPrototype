@@ -72,6 +72,24 @@ struct ServerView: View {
                     Image(systemName: "gear")
                 }
             }
+            
+            ToolbarItem(placement: .bottomBar) {
+                VStack {
+                    Text("\(vm.state.scenario)-\(vm.state.distance)")
+                    
+                    HStack {
+                        Button("Get All") {
+                            
+                        }
+                        
+                        Divider()
+                        
+                        Button("Save All") {
+                            
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -97,15 +115,21 @@ var distanceBinding: Binding<String> {
 extension ServerView {
     private var modificatonSheet: some View {
         ScrollView {
-            Text("Scenario")
-            TextField("Underground", text: scenarioBinding)
-                .textField(for: $focusState, equals: .scenario)
+            Picker("Scenario", selection: scenarioBinding) {
+                ForEach(Scenario.allCases) { scenario in
+                    Text(scenario.rawValue)
+                        .tag(scenario.rawValue)
+                }
+            }
             
             Divider()
             
-            Text("Distance")
-            TextField("10", text: distanceBinding)
-                .textField(for: $focusState, equals: .distance)
+            Picker("Distance", selection: distanceBinding) {
+                ForEach(Distance.allCases) { distance in
+                    Text(distance.rawValue)
+                        .tag(distance.rawValue)
+                }
+            }
         }
     }
 }

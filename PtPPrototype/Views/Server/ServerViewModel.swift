@@ -22,11 +22,15 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
     enum Action {
         case onAppear
         case onReloadButtonPressed
-        case onGetTestResultsButtonPressedFor(TransportProtocol)
-        case onSaveResultButtonPressedFor(TransportProtocol)
         case onAlertOKButtonPressed
         case onScenarioChanged(String)
         case onDistanceChanged(String)
+        
+        case onGetTestResultsButtonPressedFor(TransportProtocol)
+        case onSaveResultButtonPressedFor(TransportProtocol)
+        
+        case onGetAllButtonPressed
+        case onSaveAllButtonPressed
     }
     
     @Published
@@ -70,20 +74,50 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
                 server.startAdvertising()
             }
             
+        case .onSaveAllButtonPressed:
+            for (transportProtocol, result) in state.testResults {
+                let fileName = "Server-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard)).csv"
+                
+                do {
+                    try ResultSaver.save(
+                        name: fileName,
+                        content: result.toCSV(
+                            in: state.scenario,
+                            with: state.distance,
+                            using: transportProtocol.rawValue.uppercased()
+                        )
+                    )
+                } catch {
+                    state.alertString = "Error while saving \(transportProtocol.rawValue)"
+                    break
+                }
+            }
+            if state.alertString == nil {
+                state.alertString = "Results saved!"
+            }
+            
+        case .onGetAllButtonPressed:
+            for server in servers {
+                self.state.testResults[server.transportProtocol] = await server.getTestResult()
+            }
+            
         case let .onSaveResultButtonPressedFor(transportProtocol):
             if let result = state.testResults.first(where: { $0.key == transportProtocol })?.value {
                 let fileName = "Server-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard)).csv"
                 
-                ResultSaver.save(
-                    name: fileName,
-                    content: result.toCSV(
-                        in: state.scenario,
-                        with: state.distance,
-                        using: transportProtocol.rawValue.uppercased()
+                do {
+                    try ResultSaver.save(
+                        name: fileName,
+                        content: result.toCSV(
+                            in: state.scenario,
+                            with: state.distance,
+                            using: transportProtocol.rawValue.uppercased()
+                        )
                     )
-                )
-                
-                state.alertString = "File saved"
+                    state.alertString = "File saved"
+                } catch {
+                    state.alertString = "Error while saving \(transportProtocol.rawValue)"
+                }
             }
 
         case let .onGetTestResultsButtonPressedFor(transportProtocol):

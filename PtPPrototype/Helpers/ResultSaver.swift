@@ -9,16 +9,12 @@
 import Foundation
 
 class ResultSaver {
-    static func save(name: String, content: String) {
-            do {
-                var fileUrl =  try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-                fileUrl = fileUrl.appendingPathComponent(name)
-                
-                try content.data(using: .utf8)?.write(to: fileUrl)
-                print("File saved at: \(fileUrl)")
-            } catch {
-                print("Failed to save file:", error)
-            }
+    static func save(name: String, content: String) throws {
+        var fileUrl =  try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        fileUrl = fileUrl.appendingPathComponent(name)
+        
+        try content.data(using: .utf8)?.write(to: fileUrl)
+        print("File saved at: \(fileUrl)")
     }
 }
 
