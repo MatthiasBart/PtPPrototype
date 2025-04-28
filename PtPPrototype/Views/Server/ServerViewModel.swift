@@ -77,7 +77,7 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
             
         case .onSaveAllButtonPressed:
             for (transportProtocol, result) in state.testResults {
-                let fileName = "Server-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard).replacingOccurrences(of: "/", with: ":")).csv"
+                let fileName = "Server-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard).replacingOccurrences(of: ":", with: "_").replacingOccurrences(of: " ", with: "_").replacingOccurrences(of: ",", with: "")).csv"
                 
                 do {
                     try ResultSaver.save(
@@ -104,7 +104,7 @@ class ServerViewModel: ObservableObject, AsyncViewModel {
             
         case let .onSaveResultButtonPressedFor(transportProtocol):
             if let result = state.testResults.first(where: { $0.key == transportProtocol })?.value {
-                let fileName = "Server-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard).replacingOccurrences(of: "/", with: ":")).csv"
+                let fileName = "Server-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard).replacingOccurrences(of: ":", with: "_").replacingOccurrences(of: " ", with: "_").replacingOccurrences(of: ",", with: "")).csv"
                 
                 do {
                     try ResultSaver.save(
