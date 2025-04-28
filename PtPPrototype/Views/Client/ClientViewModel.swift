@@ -71,7 +71,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
                     break
                 }
                 
-                let fileName = "Client-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard)).csv"
+                let fileName = "Client-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard).replacingOccurrences(of: "/", with: ":")).csv"
                 
                 do {
                     try ResultSaver.save(
@@ -93,7 +93,7 @@ class ClientViewModel: ObservableObject, AsyncViewModel {
             
         case let .onSaveResultButtonPressedFor(transportProtocol):
             if let result = state.testResults.first(where: { $0.key == transportProtocol })?.value {
-                let fileName = "Client-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard)).csv"
+                let fileName = "Client-\(transportProtocol.rawValue.uppercased())-\(state.scenario)-\(state.distance)-\(Date.now.formatted(date: .numeric, time: .standard).replacingOccurrences(of: "/", with: ":")).csv"
                 
                 do {
                     try ResultSaver.save(
